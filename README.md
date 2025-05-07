@@ -428,7 +428,7 @@ This project is licensed under the [GNU General Public License v3.0 (GPLv3)](LIC
 
 ---
 
-**nx9-dns-server** is developed and maintained by [Your Name or Organization].  
+**nx9-dns-server** is developed and maintained by Sunil Purushottam Thakare <sunil@thakares.com>.  
 For more information, see the source code or contact the maintainer via GitHub.
 
 ---
