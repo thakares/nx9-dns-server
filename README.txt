@@ -1,41 +1,167 @@
-1. Executive Summary
+# nx9-dns-server
 
-The bzo.in authoritative DNS server project has been successfully implemented and deployed. The server provides authoritative DNS responses for the bzo.in domain, correctly handling multiple record types while maintaining high performance and RFC compliance. Testing confirms that the DNS server operates according to specifications, with proper handling of all query types and error conditions.
+**nx9-dns-server** is a high-performance, RFC-compliant authoritative DNS server implemented in Rust. It is purpose-built for the `bzo.in` domain, supporting a range of DNS record types, DNSSEC, and robust operational features. The server is designed for reliability, security, and ease of deployment in production environments.
 
-2. Key achievements:
+---
 
-    Fully functional authoritative DNS server implementation in Rust
-    Support for all major record types (A, NS, MX, SOA, TXT, PTR)
-    Efficient caching mechanism with TTL-based eviction
-    Dual transport support (UDP and TCP) on port 53
-    Asynchronous I/O for high concurrency
-    Robust error handling including NXDOMAIN responses
-    SQLite backend for persistent zone data
-    Standards compliance with RFC 1034/1035
+## Table of Contents
 
-3. Implementation Details
+- [Features](#features)
+- [Architecture](#architecture)
+- [DNS Record Management](#dns-record-management)
+- [DNSSEC Support](#dnssec-support)
+- [Deployment](#deployment)
+- [Configuration](#configuration)
+- [Testing & Diagnostics](#testing--diagnostics)
+- [License](#license)
+- [Contributing](#contributing)
+- [Acknowledgements](#acknowledgements)
 
-The DNS server is built using Rust with Tokio for asynchronous I/O operations. The implementation follows RFC standards for DNS packet parsing and response generation.
+---
 
-4. Core Features
+## Features
 
-    Asynchronous networking: Powered by Tokio runtime
-    Thread-safe caching: Using Mutex<HashMap> with TTL eviction
-    Standards-compliant packet parsing: Following RFC 1034/1035
-    Multiple transport protocols: UDP and TCP on port 53
-    EDNS support: Following RFC 6891
-    Graceful shutdown: Handling Ctrl+C signals
-    Authoritative responses: For all configured records
-    NXDOMAIN handling: For non-existent domains
-    Forwarding: For non-authoritative queries
+- **Authoritative DNS**: Serves authoritative responses for all `bzo.in` domain queries.
+- **Multi-Record Support**: Handles A, AAAA, MX, NS, SOA, PTR, TXT, and CNAME records.
+- **DNSSEC Ready**: Supports DNSSEC key management and secure record signing.
+- **High Performance**: Asynchronous networking (UDP/TCP) via Tokio for handling thousands of concurrent queries.
+- **RFC Compliance**: Strict adherence to DNS protocol standards for interoperability.
+- **Extensible Storage**: Uses SQLite for DNS record storage, allowing easy updates and migrations.
+- **Easy Deployment**: Includes deployment and update scripts for smooth operational workflows.
+- **Comprehensive Logging**: Integrates with `env_logger` for detailed runtime diagnostics.
 
-5. Conclusion
+---
 
-The DNS server implementation for <your-domain.tld> demonstrates a robust, standards-compliant authoritative DNS server built in Rust. Key strengths include:
+## Architecture
 
-    Correctness: 100% accuracy in record responses
-    Performance: Microsecond-level latency
-    Scalability: Efficient architecture using Tokio and SQLite
-    Compliance: Adherence to RFC standards
+- **Language**: Rust (2021 edition)
+- **Async Runtime**: [Tokio](https://tokio.rs/)
+- **Database**: SQLite via [rusqlite](https://crates.io/crates/rusqlite)
+- **Logging**: [log](https://crates.io/crates/log) and [env_logger](https://crates.io/crates/env_logger)
+- **Error Handling**: [thiserror](https://crates.io/crates/thiserror)
+- **DNSSEC**: Built-in support for key loading and RRSIG/DS/DNSKEY records
 
-This implementation provides a solid foundation for the bzo.in domain infrastructure, with clear paths for future enhancements to add additional features and security measures.
+---
+
+## DNS Record Management
+
+DNS records are managed in an SQLite database (`dns.db`). The schema supports multiple records per domain and type, and can be easily updated using SQL scripts.
+
+**Example schema (`dns_records.sql`):**
+```sql
+CREATE TABLE IF NOT EXISTS dns_records (
+  domain TEXT NOT NULL,
+  record_type TEXT NOT NULL,
+  value TEXT NOT NULL,
+  ttl INTEGER DEFAULT 3600,
+  PRIMARY KEY (domain, record_type, value)
+) WITHOUT ROWID;
+```
+
+**Sample records:**
+```sql
+INSERT OR REPLACE INTO dns_records VALUES
+('bzo.in', 'A', '60.254.61.33', 3600),
+('bzo.in', 'MX', '10 mail.bzo.in', 3600),
+('bzo.in', 'NS', 'ns1.bzo.in', 3600),
+('bzo.in', 'NS', 'ns2.bzo.in', 3600),
+('bzo.in', 'SOA', 'ns1.bzo.in hostmaster.bzo.in 1 10800 3600 604800 86400', 3600),
+('bzo.in', 'TXT', '"v=spf1 a mx ~all"', 3600);
+```
+
+---
+
+## DNSSEC Support
+
+- **Key Management**: DNSSEC keys are loaded from environment-configured paths.
+- **Record Signing**: Supports RRSIG, DS, and DNSKEY records for secure, signed DNS responses.
+- **Preprocessing**: Key files can be preprocessed using provided scripts before deployment.
+
+---
+
+## Deployment
+
+Deployment is automated and robust, using the provided `deploy.sh` script. This script handles permissions, key preprocessing, SOA updates, binary replacement, and service management.
+
+**Typical deployment steps:**
+```bash
+# Make scripts executable and run preprocessors
+sudo chmod +x /var/dns-server/preprocess-key.sh
+sudo -u dnsuser /var/dns-server/preprocess-key.sh
+
+sudo chown dnsuser:dnsuser /var/dns-server/soa-update.sh
+sudo chmod +x /var/dns-server/soa-update.sh
+sudo -u dnsuser /var/dns-server/soa-update.sh
+
+# Deploy new server binary
+sudo systemctl stop dns-server.service
+sudo cp /home/sunil/apps/bzo-ddns/dns_server /var/dns-server/dns_server
+sudo chown dnsuser:dnsuser /var/dns-server
+sudo systemctl daemon-reload
+sudo systemctl restart dns-server.service
+sudo systemctl status dns-server.service
+```
+
+See [`deploy.sh`](deploy.sh) for the full deployment script.
+
+---
+
+## Configuration
+
+Configuration is environment-driven and highly flexible.
+
+**Key environment variables:**
+- `DNS_BIND`: Bind address (default: `0.0.0.0:53`)
+- `DNS_DB_PATH`: Path to the SQLite database (default: `dns.db`)
+- `DNSSEC_KEY_FILE`: Path to DNSSEC key file
+- `DNS_FORWARDERS`: Comma-separated list of upstream DNS resolvers
+- `DNS_NS_RECORDS`: Comma-separated list of NS records
+- `DNS_CACHE_TTL`: Cache TTL in seconds
+
+**Example:**
+```bash
+export DNS_BIND="0.0.0.0:53"
+export DNS_DB_PATH="/var/dns-server/dns.db"
+export DNSSEC_KEY_FILE="/var/dns-server/Kbzo.in.+008+24550.key"
+export DNS_FORWARDERS="8.8.8.8:53,1.1.1.1:53"
+export DNS_NS_RECORDS="ns1.bzo.in.,ns2.bzo.in."
+```
+
+---
+
+## Testing & Diagnostics
+
+A suite of shell scripts is provided for diagnostics and record verification:
+
+- **dnscheck.sh**: Runs a series of `dig` queries for all major record types and DNSSEC.
+- **dns_dump.sh**: Dumps all record types for a given domain.
+
+**Example usage:**
+```bash
+bash dnscheck.sh
+bash dns_dump.sh bzo.in
+```
+
+---
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0 (GPLv3)](LICENSE).
+
+---
+
+## Contributing
+
+Contributions, bug reports, and feature requests are welcome! Please open issues or pull requests via GitHub.
+
+---
+
+## Acknowledgements
+
+- [Tokio](https://tokio.rs/) for async runtime
+- [rusqlite](https://crates.io/crates/rusqlite) for SQLite integration
+- [dig](https://linux.die.net/man/1/dig) for DNS diagnostics
+
+---
+
+**nx9-dns-server** is developed and maintained by [Sunil Thakare](https://github.com/thakares).  
