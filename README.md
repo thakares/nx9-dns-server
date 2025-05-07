@@ -109,21 +109,21 @@ dnssec-keygen -a RSASHA256 -b 2048 -n ZONE anydomain.tld
 
 ### 3. Set the `DNSSEC_KEY_FILE` Environment Variable
 
-Copy the public key file (`.key`) to your server’s key directory (e.g., `/var/dns-server/`):
+Copy the public key file (`.key`) to your server’s key directory (e.g., `/var/nx9-dns-server/`):
 
 ```bash
-cp Kanydomain.tld.+008+24550.key /var/dns-server/
+cp Kanydomain.tld.+008+24550.key /var/nx9-dns-server/
 ```
 
 Then, set the environment variable in your deployment environment or systemd service:
 
 ```bash
-export DNSSEC_KEY_FILE="/var/dns-server/Kanydomain.tld.+008+24550.key"
+export DNSSEC_KEY_FILE="/var/nx9-dns-server/Kanydomain.tld.+008+24550.key"
 ```
 
 Or in your systemd unit file:
 ```
-Environment="DNSSEC_KEY_FILE=/var/dns-server/Kanydomain.tld.+008+24550.key"
+Environment="DNSSEC_KEY_FILE=/var/nx9-dns-server/Kanydomain.tld.+008+24550.key"
 ```
 
 ### 4. (Optional) Preprocess the Key
@@ -131,8 +131,8 @@ Environment="DNSSEC_KEY_FILE=/var/dns-server/Kanydomain.tld.+008+24550.key"
 If your deployment uses a preprocessing script (as referenced in your `deploy.sh`), run:
 
 ```bash
-sudo chmod +x /var/dns-server/preprocess-key.sh
-sudo -u dnsuser /var/dns-server/preprocess-key.sh
+sudo chmod +x /var/nx9-dns-server/preprocess-key.sh
+sudo -u dnsuser /var/nx9-dns-server/preprocess-key.sh
 ```
 This may normalize the key format or permissions as required by your server.
 
@@ -172,7 +172,7 @@ Deployment is automated and robust, using the provided [`deploy.sh`](deploy.sh) 
 set -e
 
 SRC_BIN="/home/youruser/apps/your-ddns/dns_server"
-DEST_DIR="/var/dns-server"
+DEST_DIR="/var/nx9-dns-server"
 DEST_BIN="$DEST_DIR/dns_server"
 PREPROCESS_SCRIPT="$DEST_DIR/preprocess-key.sh"
 SOA_UPDATE_SCRIPT="$DEST_DIR/soa-update.sh"
@@ -222,8 +222,8 @@ Configuration is environment-driven and highly flexible.
 **Example:**
 ```bash
 export DNS_BIND="0.0.0.0:53"
-export DNS_DB_PATH="/var/dns-server/dns.db"
-export DNSSEC_KEY_FILE="/var/dns-server/Kanydomain.tld.+008+24550.key"
+export DNS_DB_PATH="/var/nx9-dns-server/dns.db"
+export DNSSEC_KEY_FILE="/var/nx9-dns-server/Kanydomain.tld.+008+24550.key"
 export DNS_FORWARDERS="8.8.8.8:53,1.1.1.1:53"
 export DNS_NS_RECORDS="ns1.anydomain.tld.,ns2.anydomain.tld."
 ```
@@ -272,4 +272,3 @@ For more information, see the source code or contact the maintainer via GitHub.
 
 **Tip:**  
 Replace `anydomain.tld` with your actual domain throughout the configuration and database files.
-
