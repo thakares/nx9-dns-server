@@ -19,18 +19,18 @@ ALTER TABLE dns_records_new RENAME TO dns_records;
 
 -- Now insert all DNS records
 INSERT OR REPLACE INTO dns_records VALUES
-    ('33.61.254.60.in-addr.arpa', 'PTR', 'ns1.bzo.in', 3600),
-    ('admin.bzo.in', 'A', '60.254.61.33', 3600),
-    ('api.bzo.in', 'A', '60.254.61.33', 3600),
-    ('bzo.in', 'A', '60.254.61.33', 3600),
-    ('bzo.in', 'MX', '10 mail.bzo.in', 3600),
-    ('bzo.in', 'NS', 'ns1.bzo.in', 3600),
-    ('bzo.in', 'NS', 'ns2.bzo.in', 3600),  -- This will now work with the new schema
-    ('bzo.in', 'SOA', 'ns1.bzo.in hostmaster.bzo.in 1 10800 3600 604800 86400', 3600),
-    ('bzo.in', 'TXT', '"v=spf1 a mx ~all"', 3600),
-    ('ddns.bzo.in', 'A', '60.254.61.33', 3600),
-    ('ns1.bzo.in', 'A', '60.254.61.33', 3600),
-    ('ns2.bzo.in', 'A', '60.254.61.33', 3600),
-    ('www.bzo.in', 'A', '60.254.61.33', 3600);
+    ('33.61.254.60.in-addr.arpa', 'PTR', 'ns1.yourdomain.tld', 3600),
+    ('admin.yourdomain.tld', 'A', '60.254.61.33', 3600),
+    ('api.yourdomain.tld', 'A', '60.254.61.33', 3600),
+    ('yourdomain.tld', 'A', '60.254.61.33', 3600),
+    ('yourdomain.tld', 'MX', '10 mail.yourdomain.tld', 3600),
+    ('yourdomain.tld', 'NS', 'ns1.yourdomain.tld', 3600),
+    ('yourdomain.tld', 'NS', 'ns2.yourdomain.tld', 3600),  -- This will now work with the new schema
+    ('yourdomain.tld', 'SOA', 'ns1.yourdomain.tld hostmaster.yourdomain.tld 1 10800 3600 604800 86400', 3600),
+    ('yourdomain.tld', 'TXT', '"v=spf1 a mx ~all"', 3600),
+    ('ddns.yourdomain.tld', 'A', '60.254.61.33', 3600),
+    ('ns1.yourdomain.tld', 'A', '60.254.61.33', 3600),
+    ('ns2.yourdomain.tld', 'A', '60.254.61.33', 3600),
+    ('www.yourdomain.tld', 'A', '60.254.61.33', 3600);
 
 COMMIT;
