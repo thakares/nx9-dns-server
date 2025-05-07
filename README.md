@@ -1,6 +1,6 @@
 # nx9-dns-server
 
-**nx9-dns-server** is a high-performance, RFC-compliant authoritative DNS server implemented in Rust. It is designed for the `bzo.in` domain, supporting a wide range of DNS record types, DNSSEC, and robust operational features. The server is optimized for reliability, security, and ease of deployment in production environments.
+**nx9-dns-server** is a high-performance, RFC-compliant authoritative DNS server implemented in Rust. It is designed for any domain (e.g., `anydomain.tld`), supporting a wide range of DNS record types, DNSSEC, and robust operational features. The server is optimized for reliability, security, and ease of deployment in production environments.
 
 ---
 
@@ -10,6 +10,7 @@
 - [Architecture](#architecture)
 - [DNS Record Management](#dns-record-management)
 - [DNSSEC Support](#dnssec-support)
+- [How to Create DNSSEC_KEY_FILE](#how-to-create-dnssec_key_file)
 - [Deployment](#deployment)
 - [Configuration](#configuration)
 - [Testing & Diagnostics](#testing--diagnostics)
@@ -21,7 +22,7 @@
 
 ## Features
 
-- **Authoritative DNS**: Serves authoritative responses for all `bzo.in` domain queries.
+- **Authoritative DNS**: Serves authoritative responses for all queries to your domain (e.g., `anydomain.tld`).
 - **Multi-Record Support**: Handles A, AAAA, MX, NS, SOA, PTR, TXT, and CNAME records.
 - **DNSSEC Ready**: Supports DNSSEC key management and secure record signing.
 - **High Performance**: Asynchronous networking (UDP/TCP) via Tokio for handling thousands of concurrent queries.
@@ -61,12 +62,13 @@ CREATE TABLE IF NOT EXISTS dns_records (
 **Sample records:**
 ```sql
 INSERT OR REPLACE INTO dns_records VALUES
-('bzo.in', 'A', '60.254.61.33', 3600),
-('bzo.in', 'MX', '10 mail.bzo.in', 3600),
-('bzo.in', 'NS', 'ns1.bzo.in', 3600),
-('bzo.in', 'NS', 'ns2.bzo.in', 3600),
-('bzo.in', 'SOA', 'ns1.bzo.in hostmaster.bzo.in 1 10800 3600 604800 86400', 3600),
-('bzo.in', 'TXT', '"v=spf1 a mx ~all"', 3600);
+('anydomain.tld', 'A', '203.0.113.10', 3600),
+('anydomain.tld', 'MX', '10 mail.anydomain.tld', 3600),
+('anydomain.tld', 'NS', 'ns1.anydomain.tld', 3600),
+('anydomain.tld', 'NS', 'ns2.anydomain.tld', 3600),
+('anydomain.tld', 'SOA', 'ns1.anydomain.tld hostmaster.anydomain.tld 1 10800 3600 604800 86400', 3600),
+('anydomain.tld', 'TXT', '"v=spf1 a mx ~all"', 3600),
+('www.anydomain.tld', 'A', '203.0.113.10', 3600);
 ```
 
 ---
@@ -76,6 +78,86 @@ INSERT OR REPLACE INTO dns_records VALUES
 - **Key Management**: DNSSEC keys are loaded from environment-configured paths.
 - **Record Signing**: Supports RRSIG, DS, and DNSKEY records for secure, signed DNS responses.
 - **Preprocessing**: Key files can be preprocessed using provided scripts before deployment.
+
+---
+
+## How to Create `DNSSEC_KEY_FILE`
+
+To enable DNSSEC for `nx9-dns-server`, you need to generate a DNSSEC key pair and provide the public key file to the server via the `DNSSEC_KEY_FILE` environment variable. Here’s how you can do it using [BIND’s dnssec-keygen tool](https://bind9.readthedocs.io/en/latest/reference.html#dnssec-keygen):
+
+### 1. Install `dnssec-keygen`
+
+On most Linux systems, you can install it via the package manager:
+
+```bash
+sudo apt-get install bind9-dnsutils   # Debian/Ubuntu
+# or
+sudo yum install bind-utils           # CentOS/RHEL
+```
+
+### 2. Generate DNSSEC Key Pair
+
+Run the following command to generate a 2048-bit RSA key for your domain (replace `anydomain.tld` with your actual domain):
+
+```bash
+dnssec-keygen -a RSASHA256 -b 2048 -n ZONE anydomain.tld
+```
+
+- This will produce two files in your current directory:
+  - `K.+008+.key` (public key)
+  - `K.+008+.private` (private key)
+
+### 3. Set the `DNSSEC_KEY_FILE` Environment Variable
+
+Copy the public key file (`.key`) to your server’s key directory (e.g., `/var/dns-server/`):
+
+```bash
+cp Kanydomain.tld.+008+24550.key /var/dns-server/
+```
+
+Then, set the environment variable in your deployment environment or systemd service:
+
+```bash
+export DNSSEC_KEY_FILE="/var/dns-server/Kanydomain.tld.+008+24550.key"
+```
+
+Or in your systemd unit file:
+```
+Environment="DNSSEC_KEY_FILE=/var/dns-server/Kanydomain.tld.+008+24550.key"
+```
+
+### 4. (Optional) Preprocess the Key
+
+If your deployment uses a preprocessing script (as referenced in your `deploy.sh`), run:
+
+```bash
+sudo chmod +x /var/dns-server/preprocess-key.sh
+sudo -u dnsuser /var/dns-server/preprocess-key.sh
+```
+This may normalize the key format or permissions as required by your server.
+
+### 5. Restart the DNS Server
+
+After setting the key file, restart your DNS server to load the new key:
+
+```bash
+sudo systemctl restart dns-server.service
+```
+
+### 6. Verify DNSSEC is Working
+
+Use the provided `dnscheck.sh` script or `dig` to verify DNSSEC records:
+
+```bash
+bash dnscheck.sh
+# or manually:
+dig @localhost anydomain.tld DNSKEY +dnssec
+```
+
+**Note:**  
+- Keep your `.private` key file secure and never expose it publicly.
+- Only the `.key` (public) file should be referenced by the server.
+- The server will load and use the public key for signing DNS responses.
 
 ---
 
@@ -89,7 +171,7 @@ Deployment is automated and robust, using the provided [`deploy.sh`](deploy.sh) 
 
 set -e
 
-SRC_BIN="/home/sunil/apps/bzo-ddns/dns_server"
+SRC_BIN="/home/youruser/apps/your-ddns/dns_server"
 DEST_DIR="/var/dns-server"
 DEST_BIN="$DEST_DIR/dns_server"
 PREPROCESS_SCRIPT="$DEST_DIR/preprocess-key.sh"
@@ -141,9 +223,9 @@ Configuration is environment-driven and highly flexible.
 ```bash
 export DNS_BIND="0.0.0.0:53"
 export DNS_DB_PATH="/var/dns-server/dns.db"
-export DNSSEC_KEY_FILE="/var/dns-server/Kbzo.in.+008+24550.key"
+export DNSSEC_KEY_FILE="/var/dns-server/Kanydomain.tld.+008+24550.key"
 export DNS_FORWARDERS="8.8.8.8:53,1.1.1.1:53"
-export DNS_NS_RECORDS="ns1.bzo.in.,ns2.bzo.in."
+export DNS_NS_RECORDS="ns1.anydomain.tld.,ns2.anydomain.tld."
 ```
 
 ---
@@ -158,7 +240,7 @@ A suite of shell scripts is provided for diagnostics and record verification:
 **Example usage:**
 ```bash
 bash dnscheck.sh
-bash dns_dump.sh bzo.in
+bash dns_dump.sh anydomain.tld
 ```
 
 ---
@@ -183,7 +265,11 @@ Contributions, bug reports, and feature requests are welcome! Please open issues
 
 ---
 
-**nx9-dns-server** is developed and maintained by [Sunil Thakare](https://github.com/thakares).  
+**nx9-dns-server** is developed and maintained by [Your Name or Organization].  
 For more information, see the source code or contact the maintainer via GitHub.
 
 ---
+
+**Tip:**  
+Replace `anydomain.tld` with your actual domain throughout the configuration and database files.
+
