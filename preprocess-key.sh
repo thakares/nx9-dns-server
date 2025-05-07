@@ -1,6 +1,6 @@
 #!/bin/bash
 
-INPUT_FILE="/var/nx9-dns-server/Kbzo.in.+008+24550.key"
+INPUT_FILE="/var/nx9-dns-server/Kyourdomain.+nnn+nnnnn.key"
 OUTPUT_FILE="/var/nx9-dns-server/processed.key"
 
 # Extract and clean the DNSKEY record
