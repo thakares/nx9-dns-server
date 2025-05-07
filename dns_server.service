@@ -17,7 +17,7 @@ Environment=DNS_AUTHORITATIVE=1
 Environment=DNS_CACHE_TTL=300
 Environment=RUST_LOG=info
 Environment=DNS_DEFAULT_DOMAIN=yourdomain.tld
-Environment=DNS_DEFAULT_IP=<YOUT-PUBLIC-IP4>
+Environment=DNS_DEFAULT_IP=<YOUR-PUBLIC-IP4>
 Environment="DNS_RECURSIVE=1" # Enable recursive resolution
 Environment="DNS_CACHE_SIZE=10000" 
 Environment="DNS_FORWARDERS=8.8.8.8:53,1.1.1.1:53,9.9.9.9:53"
