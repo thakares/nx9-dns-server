@@ -1,7 +1,7 @@
 #!/bin/bash
 
-INPUT_FILE="/var/dns-server/Kbzo.in.+008+24550.key"
-OUTPUT_FILE="/var/dns-server/processed.key"
+INPUT_FILE="/var/nx9-dns-server/Kbzo.in.+008+24550.key"
+OUTPUT_FILE="/var/nx9-dns-server/processed.key"
 
 # Extract and clean the DNSKEY record
 DNSKEY_RECORD=$(grep -E '^[^;].*IN[[:space:]]+DNSKEY' "$INPUT_FILE" | head -1)
