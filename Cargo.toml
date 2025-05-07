@@ -1,6 +1,6 @@
 # Cargo.toml
 [package]
-name = "dns_server"
+name = "nx9-dns-server"
 version = "0.1.0"
 edition = "2021"
 
