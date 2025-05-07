@@ -122,11 +122,11 @@ impl ServerConfig {
                 .unwrap_or(false),
             ns_records: env::var("DNS_NS_RECORDS")
                 .map(|v| v.split(',').map(|s| s.trim().to_string()).collect())
-                .unwrap_or_else(|_| vec!["ns1.bzo.in.".into(), "ns2.bzo.in.".into()]),
+                .unwrap_or_else(|_| vec!["ns1.yourdomain.tld.".into(), "ns2.yourdomain.tld.".into()]),
             default_domain: env::var("DNS_DEFAULT_DOMAIN").unwrap_or_else(|_| "bzo.in".into()),
-            default_ip: env::var("DNS_DEFAULT_IP").unwrap_or_else(|_| "60.254.61.33".into()),
+            default_ip: env::var("DNS_DEFAULT_IP").unwrap_or_else(|_| "<your-public-ip4-here>".into()),
             ds_records: vec![
-                "bzo.in. IN DS 24550 8 2 1F21CA282945434EE0662805430599CB2A6C479D9F934087150901CE2DA580A0".to_string()
+                "yourdomain.tld. IN DS 24550 8 2 1F21CA282945434EE0662805430599CB2A6C479D9F934087150901CE2DA580A0".to_string()
             ],
             dnskey_records,
             forwarders,
