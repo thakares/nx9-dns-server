@@ -15,6 +15,8 @@
 - [DNSSEC Support](#dnssec-support)
 - [How to Create DNSSEC_KEY_FILE](#how-to-create-dnssec_key_file)
 - [Deployment](#deployment)
+  - [Traditional Deployment](#traditional-deployment)
+  - [Docker Deployment](#docker-deployment)
 - [Configuration](#configuration)
 - [Testing & Diagnostics](#testing--diagnostics)
 - [Roadmap](#roadmap)
@@ -50,6 +52,8 @@
 - **DNSSEC**: Built-in support for key loading and RRSIG/DS/DNSKEY records
 - **Web Framework**: (Coming soon) [Rocket](https://rocket.rs/) or [Axum](https://github.com/tokio-rs/axum) for UI and API endpoints
 - **Authentication**: (Coming soon) JWT-based authentication and role-based authorization
+- **Containerization**: Docker support with Alpine Linux for minimal footprint
+- **Cross-Compilation**: Support for building from Debian to Alpine Linux (musl) target
 
 ---
 
@@ -270,6 +274,8 @@ dig @localhost anydomain.tld DNSKEY +dnssec
 
 ## Deployment
 
+### Traditional Deployment
+
 Deployment is automated and robust, using the provided [`deploy.sh`](deploy.sh) script. This script handles permissions, key preprocessing, SOA updates, binary replacement, and service management.
 
 **Typical deployment steps:**
@@ -311,6 +317,137 @@ echo "📈 Checking service status..."
 sudo systemctl status dns-server.service
 ```
 See [`deploy.sh`](deploy.sh) for the full deployment script.
+
+### Docker Deployment
+
+We provide a Docker-based deployment option using Alpine Linux for a minimal and secure container.
+
+#### Dockerfile
+
+```Dockerfile
+# Build stage
+FROM rust:1.72-slim-bookworm AS builder
+
+# Install necessary build dependencies
+RUN apt-get update && apt-get install -y \
+    musl-tools \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add support for cross-compilation to Alpine
+RUN rustup target add x86_64-unknown-linux-musl
+
+# Create a new empty project
+WORKDIR /app
+COPY . .
+
+# Build the project with musl target
+RUN cargo build --target x86_64-unknown-linux-musl --release
+
+# Runtime stage
+FROM alpine:3.18
+
+# Install runtime dependencies
+RUN apk --no-cache add ca-certificates sqlite tzdata
+
+# Create a non-root user for running the application
+RUN addgroup -S dns && adduser -S dnsuser -G dns
+
+# Create necessary directories
+RUN mkdir -p /var/nx9-dns-server /var/log/nx9-dns-server /etc/nx9-dns-server
+RUN chown -R dnsuser:dns /var/nx9-dns-server /var/log/nx9-dns-server /etc/nx9-dns-server
+
+# Copy the compiled binary
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/dns_server /usr/local/bin/
+RUN chmod +x /usr/local/bin/dns_server
+
+# Copy configuration files
+COPY --from=builder /app/conf/dns_records.sql /etc/nx9-dns-server/
+COPY --from=builder /app/conf/dns.db.sample /etc/nx9-dns-server/
+
+# Expose DNS ports
+EXPOSE 53/udp 53/tcp
+# Expose Web UI port
+EXPOSE 8080/tcp
+# Expose API port
+EXPOSE 8081/tcp
+
+# Set working directory
+WORKDIR /var/nx9-dns-server
+
+# Switch to non-root user
+USER dnsuser
+
+# Command to run the application
+CMD ["/usr/local/bin/dns_server"]
+```
+
+#### Building the Docker Image
+
+```bash
+# Clone the repository
+git clone https://github.com/thakares/nx9-dns-server.git
+cd nx9-dns-server
+
+# Build the Docker image
+docker build -t nx9-dns-server:latest .
+```
+
+#### Running the Container
+
+```bash
+# Run with basic configuration
+docker run -d --name nx9-dns \
+  -p 53:53/udp -p 53:53/tcp \
+  -p 8080:8080 -p 8081:8081 \
+  -v /path/to/dns.db:/var/nx9-dns-server/dns.db \
+  -v /path/to/keys:/etc/nx9-dns-server/keys \
+  -e DNS_BIND=0.0.0.0:53 \
+  -e DNS_DB_PATH=/var/nx9-dns-server/dns.db \
+  -e DNSSEC_KEY_FILE=/etc/nx9-dns-server/keys/Kanydomain.tld.key \
+  -e WEB_UI_BIND=0.0.0.0:8080 \
+  -e API_BIND=0.0.0.0:8081 \
+  nx9-dns-server:latest
+```
+
+#### Using Docker Compose
+
+For more complex deployments, a `docker-compose.yml` file is recommended:
+
+```yaml
+version: '3.8'
+
+services:
+  dns:
+    image: nx9-dns-server:latest
+    container_name: nx9-dns
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      - ./data/dns.db:/var/nx9-dns-server/dns.db
+      - ./keys:/etc/nx9-dns-server/keys
+      - ./logs:/var/log/nx9-dns-server
+    environment:
+      - DNS_BIND=0.0.0.0:53
+      - DNS_DB_PATH=/var/nx9-dns-server/dns.db
+      - DNSSEC_KEY_FILE=/etc/nx9-dns-server/keys/Kanydomain.tld.key
+      - DNS_FORWARDERS=8.8.8.8:53,1.1.1.1:53
+      - DNS_NS_RECORDS=ns1.anydomain.tld.,ns2.anydomain.tld.
+      - WEB_UI_BIND=0.0.0.0:8080
+      - API_BIND=0.0.0.0:8081
+    restart: unless-stopped
+```
+
+To run with Docker Compose:
+
+```bash
+docker-compose up -d
+```
 
 ---
 
@@ -379,6 +516,7 @@ Our planned features and improvements:
 - [ ] Zone transfer (AXFR/IXFR) support
 - [ ] Dynamic DNS update protocol (RFC 2136)
 - [ ] DNSSEC key rotation automation
+- [ ] Kubernetes Helm charts for enterprise deployment
 
 ### Long-term (6+ months)
 - [ ] Secondary/slave DNS server support
@@ -428,7 +566,7 @@ This project is licensed under the [GNU General Public License v3.0 (GPLv3)](LIC
 
 ---
 
-**nx9-dns-server** is developed and maintained by Sunil Purushottam Thakare <sunil@thakares.com>.  
+**nx9-dns-server** is developed and maintained by [Your Name or Organization].  
 For more information, see the source code or contact the maintainer via GitHub.
 
 ---
