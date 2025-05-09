@@ -1896,4 +1896,5 @@ fn init_db(db_path: &str, default_domain: &str, default_ip: &str) -> Result<(), 
     Ok(())
 }
 
-// List line of the code: main.rs //
+// LAST line of the code: main.rs //
+// Sunil Purushottam Thakare //
