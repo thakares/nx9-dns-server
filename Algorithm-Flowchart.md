@@ -1,5 +1,5 @@
 
-# DNS Server Algorithm & Flowchart
+# NX9 DNS Server Algorithm & Flowchart
 
 This document outlines the algorithm and flowchart for a DNS server implementation compliant with RFC 1035 (DNS) and RFC 4034 (DNSSEC).
 
