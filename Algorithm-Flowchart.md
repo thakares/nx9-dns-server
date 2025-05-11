@@ -117,7 +117,7 @@ Below is the visual representation of the DNS query handling logic:
                                    |
                                    v
                         +---------------------+
-                        | End                |
+                        | End                 |
                         +---------------------+
 
 ```
