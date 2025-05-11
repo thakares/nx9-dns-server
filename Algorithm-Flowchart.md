@@ -57,7 +57,7 @@ This document outlines the algorithm and flowchart for a DNS server implementati
 ---
 
 ## 📊 Flowchart
-
+![Flowchart](flow-chart.png)
 Below is the visual representation of the DNS query handling logic:
 
 ```
