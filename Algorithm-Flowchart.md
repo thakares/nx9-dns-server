@@ -60,7 +60,7 @@ This document outlines the algorithm and flowchart for a DNS server implementati
 
 Below is the visual representation of the DNS query handling logic:
 
-![DNS Query Handling Flowchart](./A_flowchart_in_the_image_illustrates_the_query_han.png)
+![DNS Query Handling Flowchart](./flowchart.png)
 
 ---
 
