@@ -1,15 +1,20 @@
 # Cargo.toml
 [package]
-name = "nx9_dns_server"
+name = "nx9-dns-server"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rusqlite = "0.35.0"
-log = "0.4.27"
-thiserror = "2.0.12"
-env_logger = "0.11.8"
-tokio = { version = "1.44", features = ["full"] }
-hex = "0.4.3"
-base64 = "0.22.1"
-chrono = "0.4.41"
+tokio = { version = "1.32", features = ["full"] }
+rusqlite = { version = "0.29", features = ["bundled"] }
+log = "0.4"
+env_logger = "0.10"
+thiserror = "1.0"
+hex = "0.4"
+base64 = "0.21"
+r2d2 = "0.8"
+r2d2_sqlite = "0.22"
+lru = "0.12"
+metrics = "0.21"
+metrics-exporter-prometheus = "0.12"
+chrono = "0.4"

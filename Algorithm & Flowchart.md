@@ -1,119 +1,146 @@
-## DNS Server Algorithm
 
-**1. Server Initialization**
+# DNS Server Algorithm & Flowchart
 
-```rust
-1.1 Load configuration from environment variables
-1.2 Initialize logging system
-1.3 Create SQLite database connection
-1.4 Initialize cache with NS records
-1.5 Start periodic cache cleanup task
-1.6 Bind UDP and TCP sockets on specified port
-```
+This document outlines the algorithm and flowchart for a DNS server implementation compliant with RFC 1035 (DNS) and RFC 4034 (DNSSEC).
 
-**2. Query Handling Flow**
+---
 
-```
-                    Start
-                      │
-                      ▼
-               Receive DNS Query
-                      │
-                      ▼
-            Parse Query Header/Question
-                      │
-                      ▼
-          Check Cache for Domain Record
-              ┌───────┴───────┐
-              ▼               ▼
-         Cache Hit      Cache Miss
-              │               │
-              ▼               ▼
-       Build Response    Query Database
-                              │
-                              ▼
-                   Check Authoritative Flag
-                      ┌────────┴────────┐
-                      ▼                 ▼
-                Record Found      Record Not Found
-                      │                 │
-                      ▼                 ▼
-               Build Response    Forward to Resolvers
-                      │                 │
-                      ▼                 ▼
-                  Add DNSSEC           ▼
-                 Signatures       Receive Forwarded Response
-                      │                 │
-                      ▼                 ▼
-               Send Response to Client
-                      │
-                      ▼
-                     End
-```
+## ✅ Server Algorithm
 
-**3. DNSSEC Signing Process**
+### 1. Server Initialization
 
-```rust
-3.1 Load DNSSEC key from configured file
-3.2 For each relevant DNS record:
-    3.2.1 Generate RRSIG record
-    3.2.2 Encode signature using Base64
-    3.2.3 Calculate key tag and signature expiration
-3.3 Add RRSIG records to DNS response
-3.4 Include DNSKEY records in authority section
-```
+1. Load configuration from environment variables.
+2. Initialize the logging system.
+3. Create SQLite database connection and initialize schema.
+4. Initialize cache with NS records.
+5. Start periodic cache cleanup task (every 5 minutes).
+6. Bind and listen on UDP and TCP sockets.
 
-**4. Response Generation Logic**
+### 2. Query Handling Flow
+
+#### Upon Receiving a DNS Query:
+
+1. Validate DNS query packet.
+2. Parse header and extract domain name and query type.
+3. If query type is `DNSKEY` or `DS`, return signed records.
+4. Check DNS cache:
+    - If **hit**, build and return response.
+    - If **miss**, lookup in database:
+        - If found, respond and cache it.
+        - If not found:
+            - If authoritative, return `NXDOMAIN`.
+            - Else, forward to upstream resolvers.
+5. Add DNSSEC signatures if applicable.
+6. Send response to the client.
+
+### 3. DNSSEC Signing Process
+
+1. Load DNSSEC key from configured file.
+2. For each relevant record:
+    - Generate `RRSIG`.
+    - Encode signature (Base64).
+    - Calculate key tag and signature expiration.
+3. Add `RRSIG` to the answer section.
+4. Include `DNSKEY` in the authority section if needed.
+
+### 4. Response Generation Logic
+
+1. Construct response header:
+    - Set QR flag and response code.
+    - Include Authoritative Answer (AA) if authoritative.
+2. Attach original question section.
+3. Populate:
+    - **Answer** section: with resolved records.
+    - **Authority** section: with NS and DS records.
+    - **Additional** section: with glue records, DNSKEY if required.
+
+---
+
+## 📊 Flowchart
+![Flowchart](Flow-Chart.png)
+Below is the visual representation of the DNS query handling logic:
 
 ```
-4.1 Create response header with:
-    - Original query ID
-    - QR flag set to response
-    - Authoritative Answer flag
-    - Appropriate response code (NOERROR/NXDOMAIN)
-    
-4.2 Add original question section
 
-4.3 Populate answer section with:
-    - Resource records from cache/database
-    - TTL values from configuration
-    
-4.4 Add authority section with:
-    - NS records
-    - DS records for DNSSEC
-    
-4.5 Include additional section with:
-    - A records for NS names
-    - DNSKEY records when applicable
++---------------------+
+|   Start DNS Server  |
++---------------------+
+           |
+           v
++---------------------+
+|  Receive DNS Query  |
++---------------------+
+           |
+           v
++---------------------+
+| Parse Header and    |
+| Extract Domain &    |
+| Query Type          |
++---------------------+
+           |
+           +---------------------+
+           |                     |
+           v                     v
++---------------------+  +---------------------+
+| Is Query Type       |  | Use Cache           |
+| DNSKEY/DS?          |  |                     |
++---------------------+  +---------------------+
+           |                     |
+    Yes    |                     |
+           v                     v
++---------------------+  +---------------------+
+| Return              |  | Lookup in SQLite DB |
+| DNSSEC Record       |  |                     |
++---------------------+  +---------------------+
+                                   |
+                                   v
+                        +---------------------+
+                        | Is Authoritative    |
+                        | Zone?               |
+                        +---------------------+
+                                   |
+                            No     |
+                                   v
+                        +---------------------+
+                        | Return NXDOMAIN     |
+                        +---------------------+
+                                   |
+                                   v
+                        +---------------------+
+                        | Add GSSEC           |
+                        +---------------------+
+                                   |
+                                   v
+                        +---------------------+
+                        | Send Response       |
+                        +---------------------+
+                                   |
+                                   v
+                        +---------------------+
+                        | End                 |
+                        +---------------------+
+
 ```
 
 
-## Key Data Flow Components
+## 🧩 Key Components
 
-| Component | Purpose | Implementation Details |
-| :-- | :-- | :-- |
-| `DnsCache` | Response caching | Mutex-protected HashMap with TTL |
-| `ServerConfig` | Runtime configuration | Environment variables parsing |
-| `rusqlite` | Persistent storage | SQLite database with DNS records |
-| `tokio` | Async I/O handling | UDP/TCP listeners with task spawning |
-| `DNSSEC` | Response signing | RSA-SHA256 with preloaded keys |
+| Component      | Purpose                    | Details                                  |
+|----------------|----------------------------|------------------------------------------|
+| `DnsCache`     | DNS Response Cache         | Thread-safe HashMap with TTL             |
+| `ServerConfig` | Server Configuration       | Loaded via environment variables         |
+| `rusqlite`     | Record Storage             | SQLite database backend                  |
+| `tokio`        | Async I/O Runtime          | UDP/TCP async handlers and tasks         |
+| `DNSSEC`       | Secure DNS Signing         | RSA-SHA256 with Base64-encoded keys      |
 
-## Error Handling Strategy
+---
 
-```rust
-- Use custom DnsError enum with thiserror crate
-- Graceful shutdown on SIGINT
-- Automatic cache cleanup every 5 minutes
-- Fallback to forwarding when local resolution fails
-- Comprehensive logging at all stages
-```
+## ⚠️ Error Handling Strategy
 
-The server implements RFC 1035 (DNS) and RFC 4034 (DNSSEC) specifications with a focus on:
+- Custom `DnsError` enum via `thiserror`
+- Graceful shutdown via `SIGINT`
+- Cache cleanup every 5 minutes
+- Fallback to resolver forwarding
+- Detailed logging at every stage
 
-1. Async I/O using Tokio runtime
-2. Thread-safe caching with atomic reference counting
-3. Configurable forwarding and fallback mechanisms
-4. DNSSEC signing capability for authoritative responses
-5. SQLite-based record storage with schema versioning
-
-<div style="text-align: center">⁂</div>
+---
