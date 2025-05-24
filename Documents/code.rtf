@@ -1,0 +1,1634 @@
+{\rtf1\ansi \deff1{\fonttbl{\f1\fmodern\fprq1\fcharset0 Courier New;}}{\colortbl;\red224\green234\blue238;\red00\green00\blue00;\red191\green03\blue03;\red176\green126\blue00;\red131\green129\blue131;\red131\green129\blue131;\red255\green00\blue255;\red00\green130\blue00;\red129\green129\blue00;\red85\green85\blue85;\red00\green00\blue00;\red00\green87\blue174;\red255\green00\blue00;\red255\green00\blue00;\red00\green00\blue00;\red00\green87\blue174;\red00\green00\blue00;\red01\green01\blue129;\red13\green91\blue195;\red117\green13\blue195;\red00\green00\blue00;}
+\paperw11905\paperh16837\margl1134\margr1134\margt1134\margb1134\sectd\plain\f1\fs20
+\pard \cbpat1{{\cf2{}}{\cf15{\b use\b0 }} {\cf2{std}}{\cf11{::\{}}}\par\pard
+\cbpat1{{\cf2{    collections}}{\cf11{::}}{\cf2{HashMap}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    env}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    net}}{\cf11{::}}{\cf2{SocketAddr}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf16{str}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    sync}}{\cf11{::\{}}{\cf2{Arc}}{\cf11{,}} {\cf2{Mutex}}{\cf11{,}} {\cf2{OnceLock}}{\cf11{\},}}}\par\pard
+\cbpat1{{\cf2{    time}}{\cf11{::\{}}{\cf2{Duration}}{\cf11{,}} {\cf2{SystemTime}}{\cf11{\},}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b use\b0 }} {\cf2{std}}{\cf11{::}}{\cf2{net}}{\cf11{::\{}}{\cf2{Ipv{4}Addr}}{\cf11{,}} {\cf2{SocketAddrV{4}}}{\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b use\b0 }} {\cf2{log}}{\cf11{::\{}}{\cf2{debug}}{\cf11{,}} {\cf2{error}}{\cf11{,}} {\cf2{info}}{\cf11{,}} {\cf2{warn}}{\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b use\b0 }} {\cf2{rusqlite}}{\cf11{::\{}}{\cf2{params}}{\cf11{,}} {\cf2{Connection}}{\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b use\b0 }} {\cf2{thiserror}}{\cf11{::}}{\cf2{Error}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b use\b0 }} {\cf2{tokio}}{\cf11{::\{}}}\par\pard
+\cbpat1{{\cf2{    io}}{\cf11{::\{}}{\cf2{AsyncReadExt}}{\cf11{,}} {\cf2{AsyncWriteExt}}{\cf11{\},}}}\par\pard
+\cbpat1{{\cf2{    net}}{\cf11{::\{}}{\cf2{TcpListener}}{\cf11{,}} {\cf2{TcpStream}}{\cf11{,}} {\cf2{UdpSocket}}{\cf11{\},}}}\par\pard
+\cbpat1{{\cf2{    signal}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    task}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b const\b0 }} {\cf2{DEFAULT_TTL}}{\cf11{:}} {\cf2{}}{\cf16{u{6}{4}}} {\cf2{}}{\cf11{=}} {\cf2{}}{\cf4{{6}{0}{0}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b const\b0 }} {\cf2{MAX_PACKET_SIZE}}{\cf11{:}} {\cf2{}}{\cf16{usize}} {\cf2{}}{\cf11{=}} {\cf2{}}{\cf4{{4}{0}{9}{6}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b const\b0 }} {\cf2{CACHE_CLEANUP_INTERVAL}}{\cf11{:}} {\cf2{Duration}} {\cf11{=}} {\cf2{Duration}}{\cf11{::}}{\cf2{}}{\cf18{from_secs}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{3}{0}{0}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{#}}{\cf11{[}}{\cf2{}}{\cf18{derive}}{\cf2{}}{\cf11{(}}{\cf2{Error}}{\cf11{,}} {\cf2{Debug}}{\cf11{)]}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b pub\b0 }} {\cf2{}}{\cf16{enum}} {\cf2{DnsError}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{    #}}{\cf11{[}}{\cf2{}}{\cf18{error}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"I/O error:}} {\cf12{\{{0}\}}}{\cf3{"}}{\cf2{}}{\cf11{)]}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Io}}{\cf2{}}{\cf11{(}}{\cf2{#}}{\cf11{[}}{\cf2{from}}{\cf11{]}} {\cf2{std}}{\cf11{::}}{\cf2{io}}{\cf11{::}}{\cf2{Error}}{\cf11{),}}}\par\pard
+\cbpat1{{\cf2{    #}}{\cf11{[}}{\cf2{}}{\cf18{error}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Database error:}} {\cf12{\{{0}\}}}{\cf3{"}}{\cf2{}}{\cf11{)]}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Db}}{\cf2{}}{\cf11{(}}{\cf2{#}}{\cf11{[}}{\cf2{from}}{\cf11{]}} {\cf2{rusqlite}}{\cf11{::}}{\cf2{Error}}{\cf11{),}}}\par\pard
+\cbpat1{{\cf2{    #}}{\cf11{[}}{\cf2{}}{\cf18{error}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Invalid DNS packet:}} {\cf12{\{{0}\}}}{\cf3{"}}{\cf2{}}{\cf11{)]}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Protocol}}{\cf2{}}{\cf11{(}}{\cf2{String}}{\cf11{),}}}\par\pard
+\cbpat1{{\cf2{    #}}{\cf11{[}}{\cf2{}}{\cf18{error}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Configuration error:}} {\cf12{\{{0}\}}}{\cf3{"}}{\cf2{}}{\cf11{)]}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Config}}{\cf2{}}{\cf11{(}}{\cf2{String}}{\cf11{),}}}\par\pard
+\cbpat1{{\cf2{    #}}{\cf11{[}}{\cf2{}}{\cf18{error}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Shutdown signal received"}}{\cf2{}}{\cf11{)]}}}\par\pard
+\cbpat1{{\cf2{    Shutdown}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{#}}{\cf11{[}}{\cf2{}}{\cf18{derive}}{\cf2{}}{\cf11{(}}{\cf2{Debug}}{\cf11{,}} {\cf2{Clone}}{\cf11{)]}}}\par\pard
+\cbpat1{{\cf2{}}{\cf16{struct}} {\cf2{ServerConfig}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{    bind_addr}}{\cf11{:}} {\cf2{SocketAddr}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    db_path}}{\cf11{:}} {\cf2{String}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    cache_ttl}}{\cf11{:}} {\cf2{}}{\cf16{u{6}{4}}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    enable_ipv{6}}}{\cf11{:}} {\cf2{bool}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    max_packet_size}}{\cf11{:}} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    authoritative}}{\cf11{:}} {\cf2{bool}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    ns_records}}{\cf11{:}} {\cf2{Vec}}{\cf11{<}}{\cf2{String}}{\cf11{>,}}}\par\pard
+\cbpat1{{\cf2{    default_domain}}{\cf11{:}} {\cf2{String}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    default_ip}}{\cf11{:}} {\cf2{String}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    forwarders}}{\cf11{:}} {\cf2{Vec}}{\cf11{<}}{\cf2{SocketAddr}}{\cf11{>,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b impl\b0 }} {\cf2{ServerConfig}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{from_env}}{\cf2{}}{\cf11{() ->}} {\cf2{Result}}{\cf11{<}}{\cf2{}}{\cf15{\b Self\b0 }}{\cf2{}}{\cf11{,}} {\cf2{DnsError}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{bind_addr}} {\cf11{=}} {\cf2{env}}{\cf11{::}}{\cf2{}}{\cf18{var}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"DNS_BIND"}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{.}}{\cf2{}}{\cf18{unwrap_or_else}}{\cf2{}}{\cf11{(|}}{\cf2{_}}{\cf11{|}} {\cf2{}}{\cf3{"{0}.{0}.{0}.{0}:{5}{3}"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{())}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{.}}{\cf2{}}{\cf18{parse}}{\cf2{}}{\cf11{()}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{.}}{\cf2{}}{\cf18{map_err}}{\cf2{}}{\cf11{(|}}{\cf2{_}}{\cf11{|}} {\cf2{DnsError}}{\cf11{::}}{\cf2{}}{\cf18{Config}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Invalid DNS_BIND address"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()))}}{\cf2{?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{forwarders}} {\cf11{=}} {\cf2{env}}{\cf11{::}}{\cf2{}}{\cf18{var}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"DNS_FORWARDERS"}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{.}}{\cf2{}}{\cf18{unwrap_or_else}}{\cf2{}}{\cf11{(|}}{\cf2{_}}{\cf11{|}} {\cf2{}}{\cf3{"{8}.{8}.{8}.{8}:{5}{3},{1}.{1}.{1}.{1}:{5}{3},{9}.{9}.{9}.{9}:{5}{3}"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{())}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{.}}{\cf2{}}{\cf18{split}}{\cf2{}}{\cf11{(}}{\cf2{'}}{\cf11{,}}{\cf2{'}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{.}}{\cf2{}}{\cf18{filter_map}}{\cf2{}}{\cf11{(|}}{\cf2{s}}{\cf11{|}} {\cf2{s}}{\cf11{.}}{\cf2{}}{\cf18{trim}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{parse}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{ok}}{\cf2{}}{\cf11{())}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{.}}{\cf2{}}{\cf18{collect}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf15{\b Self\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{            bind_addr}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{            db_path}}{\cf11{:}} {\cf2{env}}{\cf11{::}}{\cf2{}}{\cf18{var}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"DNS_DB_PATH"}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{unwrap_or_else}}{\cf2{}}{\cf11{(|}}{\cf2{_}}{\cf11{|}} {\cf2{}}{\cf3{"dns.db"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()),}}}\par\pard
+\cbpat1{{\cf2{            cache_ttl}}{\cf11{:}} {\cf2{env}}{\cf11{::}}{\cf2{}}{\cf18{var}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"DNS_CACHE_TTL"}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{ok}}{\cf2{}}{\cf11{()}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{and_then}}{\cf2{}}{\cf11{(|}}{\cf2{v}}{\cf11{|}} {\cf2{v}}{\cf11{.}}{\cf2{}}{\cf18{parse}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{ok}}{\cf2{}}{\cf11{())}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{unwrap_or}}{\cf2{}}{\cf11{(}}{\cf2{DEFAULT_TTL}}{\cf11{),}}}\par\pard
+\cbpat1{{\cf2{            enable_ipv{6}}}{\cf11{:}} {\cf2{env}}{\cf11{::}}{\cf2{}}{\cf18{var}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"DNS_ENABLE_IPV{6}"}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{map}}{\cf2{}}{\cf11{(|}}{\cf2{v}}{\cf11{|}} {\cf2{v}} {\cf11{==}} {\cf2{}}{\cf3{"{1}"}}{\cf2{}} {\cf11{||}} {\cf2{v}}{\cf11{.}}{\cf2{}}{\cf18{eq_ignore_ascii_case}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"true"}}{\cf2{}}{\cf11{))}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{unwrap_or}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf15{\b false\b0 }}{\cf2{}}{\cf11{),}}}\par\pard
+\cbpat1{{\cf2{            max_packet_size}}{\cf11{:}} {\cf2{env}}{\cf11{::}}{\cf2{}}{\cf18{var}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"DNS_MAX_PACKET_SIZE"}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{ok}}{\cf2{}}{\cf11{()}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{and_then}}{\cf2{}}{\cf11{(|}}{\cf2{v}}{\cf11{|}} {\cf2{v}}{\cf11{.}}{\cf2{}}{\cf18{parse}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{ok}}{\cf2{}}{\cf11{())}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{unwrap_or}}{\cf2{}}{\cf11{(}}{\cf2{MAX_PACKET_SIZE}}{\cf11{),}}}\par\pard
+\cbpat1{{\cf2{            authoritative}}{\cf11{:}} {\cf2{env}}{\cf11{::}}{\cf2{}}{\cf18{var}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"DNS_AUTHORITATIVE"}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{map}}{\cf2{}}{\cf11{(|}}{\cf2{v}}{\cf11{|}} {\cf2{v}} {\cf11{==}} {\cf2{}}{\cf3{"{1}"}}{\cf2{}} {\cf11{||}} {\cf2{v}}{\cf11{.}}{\cf2{}}{\cf18{eq_ignore_ascii_case}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"true"}}{\cf2{}}{\cf11{))}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{unwrap_or}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf15{\b false\b0 }}{\cf2{}}{\cf11{),}}}\par\pard
+\cbpat1{{\cf2{            ns_records}}{\cf11{:}} {\cf2{env}}{\cf11{::}}{\cf2{}}{\cf18{var}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"DNS_NS_RECORDS"}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{map}}{\cf2{}}{\cf11{(|}}{\cf2{v}}{\cf11{|}} {\cf2{v}}{\cf11{.}}{\cf2{}}{\cf18{split}}{\cf2{}}{\cf11{(}}{\cf2{'}}{\cf11{,}}{\cf2{'}}{\cf11{).}}{\cf2{}}{\cf18{map}}{\cf2{}}{\cf11{(|}}{\cf2{s}}{\cf11{|}} {\cf2{s}}{\cf11{.}}{\cf2{}}{\cf18{trim}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{to_string}}{\cf2{}}{\cf11{()).}}{\cf2{}}{\cf18{collect}}{\cf2{}}{\cf11{())}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{unwrap_or_else}}{\cf2{}}{\cf11{(|}}{\cf2{_}}{\cf11{|}} {\cf2{vec}}{\cf11{![}}{\cf2{}}{\cf3{"ns{1}.bzo.in."}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{(),}} {\cf2{}}{\cf3{"ns{2}.bzo.in."}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()]),}}}\par\pard
+\cbpat1{{\cf2{            default_domain}}{\cf11{:}} {\cf2{env}}{\cf11{::}}{\cf2{}}{\cf18{var}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"DNS_DEFAULT_DOMAIN"}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{unwrap_or_else}}{\cf2{}}{\cf11{(|}}{\cf2{_}}{\cf11{|}} {\cf2{}}{\cf3{"bzo.in"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()),}}}\par\pard
+\cbpat1{{\cf2{            default_ip}}{\cf11{:}} {\cf2{env}}{\cf11{::}}{\cf2{}}{\cf18{var}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"DNS_DEFAULT_IP"}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{unwrap_or_else}}{\cf2{}}{\cf11{(|}}{\cf2{_}}{\cf11{|}} {\cf2{}}{\cf3{"{6}{0}.{2}{5}{4}.{6}{1}.{3}{3}"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()),}}}\par\pard
+\cbpat1{{\cf2{            forwarders}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\})}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{#}}{\cf11{[}}{\cf2{}}{\cf18{derive}}{\cf2{}}{\cf11{(}}{\cf2{Debug}}{\cf11{,}} {\cf2{Clone}}{\cf11{)]}}}\par\pard
+\cbpat1{{\cf2{}}{\cf16{struct}} {\cf2{CacheEntry}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{    ip}}{\cf11{:}} {\cf2{String}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    inserted}}{\cf11{:}} {\cf2{SystemTime}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    ttl}}{\cf11{:}} {\cf2{}}{\cf16{u{6}{4}}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{#}}{\cf11{[}}{\cf2{}}{\cf18{derive}}{\cf2{}}{\cf11{(}}{\cf2{Debug}}{\cf11{)]}}}\par\pard
+\cbpat1{{\cf2{#}}{\cf11{[}}{\cf2{}}{\cf18{derive}}{\cf2{}}{\cf11{(}}{\cf2{Clone}}{\cf11{)]}}}\par\pard
+\cbpat1{{\cf2{}}{\cf16{struct}} {\cf2{DnsCache}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{    entries}}{\cf11{:}} {\cf2{Arc}}{\cf11{<}}{\cf2{Mutex}}{\cf11{<}}{\cf2{HashMap}}{\cf11{<}}{\cf2{String}}{\cf11{,}} {\cf2{CacheEntry}}{\cf11{>>>,}}}\par\pard
+\cbpat1{{\cf2{    ns_records}}{\cf11{:}} {\cf2{Vec}}{\cf11{<}}{\cf2{String}}{\cf11{>,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b impl\b0 }} {\cf2{DnsCache}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{(}}{\cf2{ns_records}}{\cf11{:}} {\cf2{Vec}}{\cf11{<}}{\cf2{String}}{\cf11{>) ->}} {\cf2{}}{\cf15{\b Self\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b Self\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{            entries}}{\cf11{:}} {\cf2{Arc}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{(}}{\cf2{Mutex}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{(}}{\cf2{HashMap}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{())),}}}\par\pard
+\cbpat1{{\cf2{            ns_records}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{get}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b self\b0 }}{\cf2{}}{\cf11{,}} {\cf2{domain}}{\cf11{: &}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{) ->}} {\cf2{Option}}{\cf11{<(}}{\cf2{String}}{\cf11{,}} {\cf2{}}{\cf16{u{6}{4}}}{\cf2{}}{\cf11{)> \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let mut\b0 }} {\cf2{cache}} {\cf11{=}} {\cf2{}}{\cf15{\b self\b0 }}{\cf2{}}{\cf11{.}}{\cf2{entries}}{\cf11{.}}{\cf2{}}{\cf18{lock}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{unwrap}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{entry}}{\cf11{) =}} {\cf2{cache}}{\cf11{.}}{\cf2{}}{\cf18{get}}{\cf2{}}{\cf11{(}}{\cf2{domain}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b if\b0 }} {\cf2{entry}}{\cf11{.}}{\cf2{inserted}}{\cf11{.}}{\cf2{}}{\cf18{elapsed}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{unwrap_or_default}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{as_secs}}{\cf2{}}{\cf11{() <=}} {\cf2{entry}}{\cf11{.}}{\cf2{ttl}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{((}}{\cf2{entry}}{\cf11{.}}{\cf2{ip}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{(),}} {\cf2{entry}}{\cf11{.}}{\cf2{ttl}}{\cf11{));}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{            cache}}{\cf11{.}}{\cf2{}}{\cf18{remove}}{\cf2{}}{\cf11{(}}{\cf2{domain}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{        None}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{set}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b self\b0 }}{\cf2{}}{\cf11{,}} {\cf2{domain}}{\cf11{:}} {\cf2{String}}{\cf11{,}} {\cf2{ip}}{\cf11{:}} {\cf2{String}}{\cf11{,}} {\cf2{ttl}}{\cf11{:}} {\cf2{}}{\cf16{u{6}{4}}}{\cf2{}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let mut\b0 }} {\cf2{cache}} {\cf11{=}} {\cf2{}}{\cf15{\b self\b0 }}{\cf2{}}{\cf11{.}}{\cf2{entries}}{\cf11{.}}{\cf2{}}{\cf18{lock}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{unwrap}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{        cache}}{\cf11{.}}{\cf2{}}{\cf18{insert}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{            domain}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{            CacheEntry}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{                ip}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{                inserted}}{\cf11{:}} {\cf2{SystemTime}}{\cf11{::}}{\cf2{}}{\cf18{now}}{\cf2{}}{\cf11{(),}}}\par\pard
+\cbpat1{{\cf2{                ttl}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\},}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{cleanup}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b self\b0 }}{\cf2{}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let mut\b0 }} {\cf2{cache}} {\cf11{=}} {\cf2{}}{\cf15{\b self\b0 }}{\cf2{}}{\cf11{.}}{\cf2{entries}}{\cf11{.}}{\cf2{}}{\cf18{lock}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{unwrap}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{        cache}}{\cf11{.}}{\cf2{}}{\cf18{retain}}{\cf2{}}{\cf11{(|}}{\cf2{_}}{\cf11{,}} {\cf2{entry}}{\cf11{| \{}}}\par\pard
+\cbpat1{{\cf2{            entry}}{\cf11{.}}{\cf2{inserted}}{\cf11{.}}{\cf2{}}{\cf18{elapsed}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{map}}{\cf2{}}{\cf11{(|}}{\cf2{d}}{\cf11{|}} {\cf2{d}}{\cf11{.}}{\cf2{}}{\cf18{as_secs}}{\cf2{}}{\cf11{() <=}} {\cf2{entry}}{\cf11{.}}{\cf2{ttl}}{\cf11{).}}{\cf2{}}{\cf18{unwrap_or}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf15{\b true\b0 }}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\});}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b static\b0 }} {\cf2{CACHE}}{\cf11{:}} {\cf2{OnceLock}}{\cf11{<}}{\cf2{DnsCache}}{\cf11{> =}} {\cf2{OnceLock}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{#}}{\cf11{[}}{\cf2{tokio}}{\cf11{::}}{\cf2{main}}{\cf11{]}}}\par\pard
+\cbpat1{{\cf2{async}} {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{main}}{\cf2{}}{\cf11{() ->}} {\cf2{Result}}{\cf11{<(),}} {\cf2{DnsError}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{    env_logger}}{\cf11{::}}{\cf2{Builder}}{\cf11{::}}{\cf2{}}{\cf18{from_env}}{\cf2{}}{\cf11{(}}{\cf2{env_logger}}{\cf11{::}}{\cf2{Env}}{\cf11{::}}{\cf2{}}{\cf17{default}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{default_filter_or}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"info"}}{\cf2{}}{\cf11{))}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{format_timestamp_micros}}{\cf2{}}{\cf11{()}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{init}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{config}} {\cf11{=}} {\cf2{ServerConfig}}{\cf11{::}}{\cf2{}}{\cf18{from_env}}{\cf2{}}{\cf11{()}}{\cf2{?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Initialize cache with NS records from config\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{cache}} {\cf11{=}} {\cf2{CACHE}}{\cf11{.}}{\cf2{}}{\cf18{get_or_init}}{\cf2{}}{\cf11{(||}} {\cf2{DnsCache}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{(}}{\cf2{config}}{\cf11{.}}{\cf2{ns_records}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{()));}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{init_db}}{\cf2{}}{\cf11{(&}}{\cf2{config}}{\cf11{.}}{\cf2{db_path}}{\cf11{, &}}{\cf2{config}}{\cf11{.}}{\cf2{default_domain}}{\cf11{, &}}{\cf2{config}}{\cf11{.}}{\cf2{default_ip}}{\cf11{)}}{\cf2{?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{cache_cleanup}} {\cf11{=}} {\cf2{task}}{\cf11{::}}{\cf2{}}{\cf18{spawn}}{\cf2{}}{\cf11{(\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{cache}} {\cf11{=}} {\cf2{cache}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{        async}} {\cf15{\b move\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let mut\b0 }} {\cf2{interval}} {\cf11{=}} {\cf2{tokio}}{\cf11{::}}{\cf2{time}}{\cf11{::}}{\cf2{}}{\cf18{interval}}{\cf2{}}{\cf11{(}}{\cf2{CACHE_CLEANUP_INTERVAL}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b loop\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{                interval}}{\cf11{.}}{\cf2{}}{\cf18{tick}}{\cf2{}}{\cf11{().}}{\cf2{await}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{                cache}}{\cf11{.}}{\cf2{}}{\cf18{cleanup}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf18{debug!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Cache cleanup completed"}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\});}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{shutdown_signal}} {\cf11{=}} {\cf2{async}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{        signal}}{\cf11{::}}{\cf2{}}{\cf18{ctrl_c}}{\cf2{}}{\cf11{().}}{\cf2{await}}{\cf11{.}}{\cf2{}}{\cf18{expect}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Failed to listen for shutdown signal"}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{info!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Shutdown signal received"}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{udp_server}} {\cf11{=}} {\cf2{}}{\cf18{run_udp_server}}{\cf2{}}{\cf11{(}}{\cf2{config}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{tcp_server}} {\cf11{=}} {\cf2{}}{\cf18{run_tcp_server}}{\cf2{}}{\cf11{(}}{\cf2{config}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{    tokio}}{\cf11{::}}{\cf2{select}}{\cf11{! \{}}}\par\pard
+\cbpat1{{\cf2{        _}} {\cf11{=}} {\cf2{shutdown_signal}} {\cf11{=> \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{info!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Initiating graceful shutdown..."}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{            cache_cleanup}}{\cf11{.}}{\cf2{}}{\cf18{abort}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{Ok}}{\cf2{}}{\cf11{(())}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\},}}}\par\pard
+\cbpat1{{\cf2{        res}} {\cf11{=}} {\cf2{udp_server}} {\cf11{=>}} {\cf2{res}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{        res}} {\cf11{=}} {\cf2{tcp_server}} {\cf11{=>}} {\cf2{res}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{async}} {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{run_udp_server}}{\cf2{}}{\cf11{(}}{\cf2{config}}{\cf11{:}} {\cf2{ServerConfig}}{\cf11{) ->}} {\cf2{Result}}{\cf11{<(),}} {\cf2{DnsError}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{socket}} {\cf11{=}} {\cf2{UdpSocket}}{\cf11{::}}{\cf2{}}{\cf18{bind}}{\cf2{}}{\cf11{(}}{\cf2{config}}{\cf11{.}}{\cf2{bind_addr}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{info!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"UDP DNS server listening on}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{config}}{\cf11{.}}{\cf2{bind_addr}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{socket}} {\cf11{=}} {\cf2{Arc}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{(}}{\cf2{socket}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{buf}} {\cf11{=}} {\cf2{vec}}{\cf11{![}}{\cf2{}}{\cf4{{0}u{8}}}{\cf2{}}{\cf11{;}} {\cf2{config}}{\cf11{.}}{\cf2{max_packet_size}}{\cf11{];}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b loop\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b match\b0 }} {\cf2{socket}}{\cf11{.}}{\cf2{}}{\cf18{recv_from}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{buf}}{\cf11{).}}{\cf2{await}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{Ok}}{\cf2{}}{\cf11{((}}{\cf2{amt}}{\cf11{,}} {\cf2{src}}{\cf11{)) => \{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{query}} {\cf11{=}} {\cf2{buf}}{\cf11{[..}}{\cf2{amt}}{\cf11{].}}{\cf2{}}{\cf18{to_vec}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{socket}} {\cf11{=}} {\cf2{socket}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{config}} {\cf11{=}} {\cf2{config}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{                task}}{\cf11{::}}{\cf2{}}{\cf18{spawn}}{\cf2{}}{\cf11{(}}{\cf2{async}} {\cf15{\b move\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{e}}{\cf11{) =}} {\cf2{}}{\cf18{handle_udp_query}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{,}} {\cf2{src}}{\cf11{,}} {\cf2{socket}}{\cf11{,}} {\cf2{config}}{\cf11{).}}{\cf2{await}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf18{warn!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"UDP query error:}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{e}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{\});}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{e}}{\cf11{) =>}} {\cf2{}}{\cf18{error!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"UDP receive error:}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{e}}{\cf11{),}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{async}} {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{handle_udp_query}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{    query}}{\cf11{:}} {\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>,}}}\par\pard
+\cbpat1{{\cf2{    src}}{\cf11{:}} {\cf2{SocketAddr}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    socket}}{\cf11{:}} {\cf2{Arc}}{\cf11{<}}{\cf2{UdpSocket}}{\cf11{>,}}}\par\pard
+\cbpat1{{\cf2{    config}}{\cf11{:}} {\cf2{ServerConfig}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{) ->}} {\cf2{Result}}{\cf11{<(),}} {\cf2{DnsError}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() <}} {\cf2{}}{\cf4{{1}{2}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{debug!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Received malformed query from}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{src}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(());}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{opcode}} {\cf11{= (}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{] &}} {\cf2{}}{\cf4{{0}x{7}{8}}}{\cf2{}}{\cf11{) >>}} {\cf2{}}{\cf4{{3}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{opcode}} {\cf11{!=}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{response}}{\cf11{) =}} {\cf2{}}{\cf18{build_not_implemented_response}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{,}} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{            socket}}{\cf11{.}}{\cf2{}}{\cf18{send_to}}{\cf2{}}{\cf11{(&}}{\cf2{response}}{\cf11{,}} {\cf2{src}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(());}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{domain}} {\cf11{=}} {\cf2{}}{\cf15{\b match\b0 }} {\cf2{}}{\cf18{extract_domain}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{d}}{\cf11{) =>}} {\cf2{d}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{        None}} {\cf11{=> \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{info!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Failed to extract domain from query"}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(());}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{debug!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"UDP query for}} {\cf12{\{\}}} {\cf3{from}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{domain}}{\cf11{,}} {\cf2{src}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{info!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Processing query for domain:}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{domain}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{response}} {\cf11{=}} {\cf2{}}{\cf15{\b match\b0 }} {\cf2{}}{\cf18{generate_dns_response}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{,}} {\cf2{domain}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{(), &}}{\cf2{config}}{\cf11{).}}{\cf2{await}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{resp}}{\cf11{) =>}} {\cf2{resp}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{_}}{\cf11{) => \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{build_nxdomain_response}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{,}} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{ok_or}}{\cf2{}}{\cf11{(}}{\cf2{DnsError}}{\cf11{::}}{\cf2{}}{\cf18{Protocol}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"NXDOMAIN"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()))}}{\cf2{?}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{    socket}}{\cf11{.}}{\cf2{}}{\cf18{send_to}}{\cf2{}}{\cf11{(&}}{\cf2{response}}{\cf11{,}} {\cf2{src}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Ok}}{\cf2{}}{\cf11{(())}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{async}} {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{forward_to_resolvers}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{],}} {\cf2{forwarders}}{\cf11{: &[}}{\cf2{SocketAddr}}{\cf11{]) ->}} {\cf2{Option}}{\cf11{<}}{\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b for\b0 }} {\cf2{}}{\cf11{&}}{\cf2{forwarder}} {\cf15{\b in\b0 }} {\cf2{forwarders}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{info!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Forwarding query to resolver:}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{forwarder}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{resp}}{\cf11{) =}} {\cf2{}}{\cf18{forward_request_udp}}{\cf2{}}{\cf11{(}}{\cf2{forwarder}}{\cf11{,}} {\cf2{query}}{\cf11{).}}{\cf2{await}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{info!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Received response from resolver:}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{forwarder}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{resp}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{    None}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{async}} {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{forward_request_tcp}}{\cf2{}}{\cf11{(}}{\cf2{forwarder}}{\cf11{:}} {\cf2{SocketAddr}}{\cf11{,}} {\cf2{query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{]) ->}} {\cf2{std}}{\cf11{::}}{\cf2{io}}{\cf11{::}}{\cf2{Result}}{\cf11{<}}{\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Connect to the forwarder using TCP\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{stream}} {\cf11{=}} {\cf2{TcpStream}}{\cf11{::}}{\cf2{}}{\cf18{connect}}{\cf2{}}{\cf11{(}}{\cf2{forwarder}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Write the query with a {2}-byte length prefix (per DNS over TCP)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{query_len}} {\cf11{=}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{    stream}}{\cf11{.}}{\cf2{}}{\cf18{write_all}}{\cf2{}}{\cf11{(&}}{\cf2{query_len}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{()).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{    stream}}{\cf11{.}}{\cf2{}}{\cf18{write_all}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Read the {2}-byte length prefix of the response\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{len_buf}} {\cf11{= [}}{\cf2{}}{\cf4{{0}u{8}}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{];}}}\par\pard
+\cbpat1{{\cf2{    stream}}{\cf11{.}}{\cf2{}}{\cf18{read_exact}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{len_buf}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{resp_len}} {\cf11{=}} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{::}}{\cf2{}}{\cf18{from_be_bytes}}{\cf2{}}{\cf11{(}}{\cf2{len_buf}}{\cf11{)}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Read the response\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{resp_buf}} {\cf11{=}} {\cf2{vec}}{\cf11{![}}{\cf2{}}{\cf4{{0}u{8}}}{\cf2{}}{\cf11{;}} {\cf2{resp_len}}{\cf11{];}}}\par\pard
+\cbpat1{{\cf2{    stream}}{\cf11{.}}{\cf2{}}{\cf18{read_exact}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{resp_buf}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{resp_buf}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i /// Tries each forwarder over TCP and returns the first valid response.\i0 }}}\par\pard
+\cbpat1{{\cf2{async}} {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{forward_to_resolvers_tcp}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{],}} {\cf2{forwarders}}{\cf11{: &[}}{\cf2{SocketAddr}}{\cf11{]) ->}} {\cf2{Option}}{\cf11{<}}{\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b for\b0 }} {\cf2{}}{\cf11{&}}{\cf2{forwarder}} {\cf15{\b in\b0 }} {\cf2{forwarders}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{resp}}{\cf11{) =}} {\cf2{}}{\cf18{forward_request_tcp}}{\cf2{}}{\cf11{(}}{\cf2{forwarder}}{\cf11{,}} {\cf2{query}}{\cf11{).}}{\cf2{await}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{resp}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{    None}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{async}} {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{forward_request_udp}}{\cf2{}}{\cf11{(}}{\cf2{forwarder}}{\cf11{:}} {\cf2{SocketAddr}}{\cf11{,}} {\cf2{query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{]) ->}} {\cf2{std}}{\cf11{::}}{\cf2{io}}{\cf11{::}}{\cf2{Result}}{\cf11{<}}{\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{local}} {\cf11{=}} {\cf2{SocketAddr}}{\cf11{::}}{\cf2{}}{\cf18{V{4}}}{\cf2{}}{\cf11{(}}{\cf2{SocketAddrV{4}}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{(}}{\cf2{Ipv{4}Addr}}{\cf11{::}}{\cf2{UNSPECIFIED}}{\cf11{,}} {\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{));}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{sock}} {\cf11{=}} {\cf2{UdpSocket}}{\cf11{::}}{\cf2{}}{\cf18{bind}}{\cf2{}}{\cf11{(}}{\cf2{local}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{    sock}}{\cf11{.}}{\cf2{}}{\cf18{send_to}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{,}} {\cf2{forwarder}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{buf}} {\cf11{= [}}{\cf2{}}{\cf4{{0}u{8}}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf4{{4}{0}{9}{6}}}{\cf2{}}{\cf11{];}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{}}{\cf11{(}}{\cf2{amt}}{\cf11{,}} {\cf2{_}}{\cf11{) =}} {\cf2{sock}}{\cf11{.}}{\cf2{}}{\cf18{recv_from}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{buf}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{buf}}{\cf11{[..}}{\cf2{amt}}{\cf11{].}}{\cf2{}}{\cf18{to_vec}}{\cf2{}}{\cf11{())}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{async}} {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{run_tcp_server}}{\cf2{}}{\cf11{(}}{\cf2{config}}{\cf11{:}} {\cf2{ServerConfig}}{\cf11{) ->}} {\cf2{Result}}{\cf11{<(),}} {\cf2{DnsError}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{listener}} {\cf11{=}} {\cf2{TcpListener}}{\cf11{::}}{\cf2{}}{\cf18{bind}}{\cf2{}}{\cf11{(}}{\cf2{config}}{\cf11{.}}{\cf2{bind_addr}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{info!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"TCP DNS server listening on}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{config}}{\cf11{.}}{\cf2{bind_addr}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b loop\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b match\b0 }} {\cf2{listener}}{\cf11{.}}{\cf2{}}{\cf18{accept}}{\cf2{}}{\cf11{().}}{\cf2{await}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{Ok}}{\cf2{}}{\cf11{((}}{\cf2{stream}}{\cf11{,}} {\cf2{addr}}{\cf11{)) => \{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{config}} {\cf11{=}} {\cf2{config}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{                task}}{\cf11{::}}{\cf2{}}{\cf18{spawn}}{\cf2{}}{\cf11{(}}{\cf2{async}} {\cf15{\b move\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{e}}{\cf11{) =}} {\cf2{}}{\cf18{handle_tcp_connection}}{\cf2{}}{\cf11{(}}{\cf2{stream}}{\cf11{,}} {\cf2{addr}}{\cf11{,}} {\cf2{config}}{\cf11{).}}{\cf2{await}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf18{warn!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"TCP connection error:}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{e}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{\});}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{e}}{\cf11{) =>}} {\cf2{}}{\cf18{error!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"TCP accept error:}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{e}}{\cf11{),}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{async}} {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{handle_tcp_connection}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b mut\b0 }} {\cf2{stream}}{\cf11{:}} {\cf2{TcpStream}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    addr}}{\cf11{:}} {\cf2{SocketAddr}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    config}}{\cf11{:}} {\cf2{ServerConfig}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{) ->}} {\cf2{Result}}{\cf11{<(),}} {\cf2{DnsError}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Read the {2}-byte length prefix\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{len}} {\cf11{=}} {\cf2{}}{\cf15{\b match\b0 }} {\cf2{stream}}{\cf11{.}}{\cf2{}}{\cf18{read_u{1}{6}}}{\cf2{}}{\cf11{().}}{\cf2{await}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{len}}{\cf11{) =>}} {\cf2{len}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{_}}{\cf11{) =>}} {\cf2{}}{\cf15{\b return\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(()),}} {\cf2{}}{\cf5{\i // Connection closed or error\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{buf}} {\cf11{=}} {\cf2{vec}}{\cf11{![}}{\cf2{}}{\cf4{{0}u{8}}}{\cf2{}}{\cf11{;}} {\cf2{len}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{];}}}\par\pard
+\cbpat1{{\cf2{    stream}}{\cf11{.}}{\cf2{}}{\cf18{read_exact}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{buf}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Check for minimum DNS header length\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{buf}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() <}} {\cf2{}}{\cf4{{1}{2}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{debug!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Received malformed TCP query from}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{addr}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(());}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Check for standard query (opcode {0})\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{opcode}} {\cf11{= (}}{\cf2{buf}}{\cf11{[}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{] &}} {\cf2{}}{\cf4{{0}x{7}{8}}}{\cf2{}}{\cf11{) >>}} {\cf2{}}{\cf4{{3}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{opcode}} {\cf11{!=}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{response}}{\cf11{) =}} {\cf2{}}{\cf18{build_not_implemented_response}}{\cf2{}}{\cf11{(&}}{\cf2{buf}}{\cf11{,}} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{send_tcp_response}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{stream}}{\cf11{, &}}{\cf2{response}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(());}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Extract domain from query\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{domain}} {\cf11{=}} {\cf2{}}{\cf15{\b match\b0 }} {\cf2{}}{\cf18{extract_domain}}{\cf2{}}{\cf11{(&}}{\cf2{buf}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{d}}{\cf11{) =>}} {\cf2{d}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{        None}} {\cf11{=> \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{info!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Failed to extract domain from TCP query"}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(());}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{debug!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"TCP query for}} {\cf12{\{\}}} {\cf3{from}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{domain}}{\cf11{,}} {\cf2{addr}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{info!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Processing TCP query for domain:}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{domain}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Try local/cache resolution first\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{response}} {\cf11{=}} {\cf2{}}{\cf15{\b match\b0 }} {\cf2{}}{\cf18{generate_dns_response}}{\cf2{}}{\cf11{(&}}{\cf2{buf}}{\cf11{,}} {\cf2{domain}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{(), &}}{\cf2{config}}{\cf11{).}}{\cf2{await}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{resp}}{\cf11{) =>}} {\cf2{resp}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{_}}{\cf11{) => \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Try TCP forwarding to upstream resolvers\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b if\b0 }} {\cf2{}}{\cf11{!}}{\cf2{config}}{\cf11{.}}{\cf2{forwarders}}{\cf11{.}}{\cf2{}}{\cf18{is_empty}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{resp}}{\cf11{) =}} {\cf2{}}{\cf18{forward_to_resolvers_tcp}}{\cf2{}}{\cf11{(&}}{\cf2{buf}}{\cf11{, &}}{\cf2{config}}{\cf11{.}}{\cf2{forwarders}}{\cf11{).}}{\cf2{await}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf18{send_tcp_response}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{stream}}{\cf11{, &}}{\cf2{resp}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(());}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Fallback: NXDOMAIN\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{nxdomain}} {\cf11{=}} {\cf2{}}{\cf18{build_nxdomain_response}}{\cf2{}}{\cf11{(&}}{\cf2{buf}}{\cf11{,}} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{.}}{\cf2{}}{\cf18{ok_or}}{\cf2{}}{\cf11{(}}{\cf2{DnsError}}{\cf11{::}}{\cf2{}}{\cf18{Protocol}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"NXDOMAIN"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()))}}{\cf2{?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{send_tcp_response}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{stream}}{\cf11{, &}}{\cf2{nxdomain}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(());}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Send the response (local/cache answer)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{send_tcp_response}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{stream}}{\cf11{, &}}{\cf2{response}}{\cf11{).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Ok}}{\cf2{}}{\cf11{(())}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{async}} {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{send_tcp_response}}{\cf2{}}{\cf11{(}}{\cf2{stream}}{\cf11{: &}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{TcpStream}}{\cf11{,}} {\cf2{response}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{]) ->}} {\cf2{std}}{\cf11{::}}{\cf2{io}}{\cf11{::}}{\cf2{Result}}{\cf11{<()> \{}}}\par\pard
+\cbpat1{{\cf2{    stream}}{\cf11{.}}{\cf2{}}{\cf18{write_all}}{\cf2{}}{\cf11{(&(}}{\cf2{response}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{()).}}{\cf2{await?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{    stream}}{\cf11{.}}{\cf2{}}{\cf18{write_all}}{\cf2{}}{\cf11{(}}{\cf2{response}}{\cf11{).}}{\cf2{await}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{extract_domain}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{]) ->}} {\cf2{Option}}{\cf11{<}}{\cf2{String}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() <}} {\cf2{}}{\cf4{{1}{2}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return\b0 }} {\cf2{None}}{\cf11{;}} {\cf2{}}{\cf5{\i // DNS header is {1}{2} bytes\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{pos}} {\cf11{=}} {\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // Start after header\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{domain}} {\cf11{=}} {\cf2{String}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Extract QNAME (domain)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b loop\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{len}} {\cf11{=}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{len}} {\cf11{==}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b break\b0 }}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // End of QNAME\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{        pos}} {\cf11{+=}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{pos}} {\cf11{+}} {\cf2{len}} {\cf11{>}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{None}}{\cf11{;}} {\cf2{}}{\cf5{\i // Invalid length\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{}}{\cf11{!}}{\cf2{domain}}{\cf11{.}}{\cf2{}}{\cf18{is_empty}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{            domain}}{\cf11{.}}{\cf2{}}{\cf18{push}}{\cf2{}}{\cf11{(}}{\cf2{'}}{\cf11{.}}{\cf2{'}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{label}} {\cf11{=}} {\cf2{}}{\cf15{\b match\b0 }} {\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{::}}{\cf2{}}{\cf18{from_utf{8}}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{..}}{\cf2{pos}} {\cf11{+}} {\cf2{len}}{\cf11{]) \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{l}}{\cf11{) =>}} {\cf2{l}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{_}}{\cf11{) =>}} {\cf2{}}{\cf15{\b return\b0 }} {\cf2{None}}{\cf11{,}} {\cf2{}}{\cf5{\i // Invalid UTF-{8}\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{        domain}}{\cf11{.}}{\cf2{}}{\cf18{push_str}}{\cf2{}}{\cf11{(}}{\cf2{label}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{        pos}} {\cf11{+=}} {\cf2{len}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Skip QTYPE and QCLASS ({4} bytes)\i0 }}}\par\pard
+\cbpat1{{\cf2{    pos}} {\cf11{+=}} {\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Verify we have enough data for at least QTYPE/QCLASS\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{pos}} {\cf11{>}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return\b0 }} {\cf2{None}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{domain}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{async}} {\cf15{\b fn\b0 }} {\cf2{}}{\cf18{generate_dns_response}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{    query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{],}}}\par\pard
+\cbpat1{{\cf2{    domain}}{\cf11{:}} {\cf2{String}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    config}}{\cf11{: &}}{\cf2{ServerConfig}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{) ->}} {\cf2{Result}}{\cf11{<}}{\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>,}} {\cf2{DnsError}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{query_type}} {\cf11{=}} {\cf2{}}{\cf18{extract_query_type}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{).}}{\cf2{}}{\cf18{unwrap_or}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Only check cache for A/AAAA queries\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{query_type}} {\cf11{==}} {\cf2{}}{\cf4{{1}}} {\cf2{}}{\cf11{||}} {\cf2{query_type}} {\cf11{==}} {\cf2{}}{\cf4{{2}{8}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{((}}{\cf2{ip}}{\cf11{,}} {\cf2{ttl}}{\cf11{)) =}} {\cf2{CACHE}}{\cf11{.}}{\cf2{}}{\cf18{get}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{unwrap}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{get}}{\cf2{}}{\cf11{(&}}{\cf2{domain}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{}}{\cf18{build_dns_response}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{, &}}{\cf2{ip}}{\cf11{,}} {\cf2{ttl}}{\cf11{,}} {\cf2{config}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{records}} {\cf11{=}} {\cf2{}}{\cf18{lookup_records}}{\cf2{}}{\cf11{(&}}{\cf2{config}}{\cf11{.}}{\cf2{db_path}}{\cf11{, &}}{\cf2{domain}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{requested_type}} {\cf11{=}} {\cf2{}}{\cf15{\b match\b0 }} {\cf2{query_type}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{1}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf3{"A"}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{2}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf3{"NS"}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{5}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf3{"CNAME"}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{6}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf3{"SOA"}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{1}{2}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf3{"PTR"}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{1}{5}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf3{"MX"}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{1}{6}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf3{"TXT"}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{2}{8}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf3{"AAAA"}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{        _}} {\cf11{=>}} {\cf2{}}{\cf3{""}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Try exact match first\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{((}}{\cf2{value}}{\cf11{,}} {\cf2{ttl}}{\cf11{,}} {\cf2{_}}{\cf11{)) =}} {\cf2{records}}{\cf11{.}}{\cf2{}}{\cf18{iter}}{\cf2{}}{\cf11{()}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{find}}{\cf2{}}{\cf11{(|(}}{\cf2{_}}{\cf11{,}} {\cf2{_}}{\cf11{,}} {\cf2{rtype}}{\cf11{)|}} {\cf2{rtype}} {\cf11{==}} {\cf2{requested_type}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{cloned}}{\cf2{}}{\cf11{()}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return match\b0 }} {\cf2{requested_type}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf3{"SOA"}}{\cf2{}} {\cf11{=>}} {\cf2{}}{\cf18{build_soa_response}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{, &}}{\cf2{value}}{\cf11{,}} {\cf2{ttl}}{\cf11{,}} {\cf2{domain}}{\cf11{,}} {\cf2{config}}{\cf11{),}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf3{"NS"}}{\cf2{}} {\cf11{=>}} {\cf2{}}{\cf18{build_ns_response}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{, &}}{\cf2{records}}{\cf11{,}} {\cf2{ttl}}{\cf11{,}} {\cf2{domain}}{\cf11{,}} {\cf2{config}}{\cf11{),}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf3{"MX"}}{\cf2{}} {\cf11{|}} {\cf2{}}{\cf3{"TXT"}}{\cf2{}} {\cf11{|}} {\cf2{}}{\cf3{"CNAME"}}{\cf2{}} {\cf11{|}} {\cf2{}}{\cf3{"PTR"}}{\cf2{}} {\cf11{=> \{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf18{build_generic_record_response}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{, &}}{\cf2{value}}{\cf11{,}} {\cf2{ttl}}{\cf11{,}} {\cf2{domain}}{\cf11{,}} {\cf2{query_type}}{\cf11{,}} {\cf2{config}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\},}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf3{"A"}}{\cf2{}} {\cf11{|}} {\cf2{}}{\cf3{"AAAA"}}{\cf2{}} {\cf11{=> \{}}}\par\pard
+\cbpat1{{\cf2{                CACHE}}{\cf11{.}}{\cf2{}}{\cf18{get}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{unwrap}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{set}}{\cf2{}}{\cf11{(}}{\cf2{domain}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{(),}} {\cf2{value}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{(),}} {\cf2{ttl}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf18{build_dns_response}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{, &}}{\cf2{value}}{\cf11{,}} {\cf2{ttl}}{\cf11{,}} {\cf2{config}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\},}}}\par\pard
+\cbpat1{{\cf2{            _}} {\cf11{=>}} {\cf2{}}{\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{DnsError}}{\cf11{::}}{\cf2{}}{\cf18{Protocol}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Unsupported record type"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()))}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Special fallback only for A/AAAA queries\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{query_type}} {\cf11{==}} {\cf2{}}{\cf4{{1}}} {\cf2{}}{\cf11{||}} {\cf2{query_type}} {\cf11{==}} {\cf2{}}{\cf4{{2}{8}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{((}}{\cf2{ip}}{\cf11{,}} {\cf2{ttl}}{\cf11{,}} {\cf2{_}}{\cf11{)) =}} {\cf2{records}}{\cf11{.}}{\cf2{}}{\cf18{iter}}{\cf2{}}{\cf11{()}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{.}}{\cf2{}}{\cf18{find}}{\cf2{}}{\cf11{(|(}}{\cf2{_}}{\cf11{,}} {\cf2{_}}{\cf11{,}} {\cf2{rtype}}{\cf11{)|}} {\cf2{rtype}} {\cf11{==}} {\cf2{}}{\cf3{"A"}}{\cf2{}} {\cf11{||}} {\cf2{rtype}} {\cf11{==}} {\cf2{}}{\cf3{"AAAA"}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{.}}{\cf2{}}{\cf18{cloned}}{\cf2{}}{\cf11{()}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{            CACHE}}{\cf11{.}}{\cf2{}}{\cf18{get}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{unwrap}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{set}}{\cf2{}}{\cf11{(}}{\cf2{domain}}{\cf11{,}} {\cf2{ip}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{(),}} {\cf2{ttl}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{}}{\cf18{build_dns_response}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{, &}}{\cf2{ip}}{\cf11{,}} {\cf2{ttl}}{\cf11{,}} {\cf2{config}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Authority and forwarding logic\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{zones}} {\cf11{=}} {\cf2{}}{\cf18{get_authoritative_zones}}{\cf2{}}{\cf11{(&}}{\cf2{config}}{\cf11{.}}{\cf2{db_path}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{is_authoritative}} {\cf11{=}} {\cf2{}}{\cf18{find_closest_parent_zone}}{\cf2{}}{\cf11{(&}}{\cf2{domain}}{\cf11{, &}}{\cf2{zones}}{\cf11{).}}{\cf2{}}{\cf18{is_some}}{\cf2{}}{\cf11{() &&}} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{}}{\cf11{!}}{\cf2{is_authoritative}} {\cf11{&& !}}{\cf2{config}}{\cf11{.}}{\cf2{forwarders}}{\cf11{.}}{\cf2{}}{\cf18{is_empty}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{resp}}{\cf11{) =}} {\cf2{}}{\cf18{forward_to_resolvers}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{, &}}{\cf2{config}}{\cf11{.}}{\cf2{forwarders}}{\cf11{).}}{\cf2{await}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let mut\b0 }} {\cf2{response}} {\cf11{=}} {\cf2{resp}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b if\b0 }} {\cf2{response}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() >=}} {\cf2{}}{\cf4{{3}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{                response}}{\cf11{[}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{] &=}} {\cf2{}}{\cf4{{0}xFB}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // Clear AA bit\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{response}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{build_nxdomain_response}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{,}} {\cf2{is_authoritative}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{ok_or}}{\cf2{}}{\cf11{(}}{\cf2{DnsError}}{\cf11{::}}{\cf2{}}{\cf18{Protocol}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"NXDOMAIN"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()))}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // Function to build response for SOA records\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{build_soa_response}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{    query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{],}}}\par\pard
+\cbpat1{{\cf2{    soa_value}}{\cf11{: &}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    ttl}}{\cf11{:}} {\cf2{}}{\cf16{u{6}{4}}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    domain}}{\cf11{:}} {\cf2{String}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    config}}{\cf11{: &}}{\cf2{ServerConfig}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{) ->}} {\cf2{Result}}{\cf11{<}}{\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>,}} {\cf2{DnsError}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{response}} {\cf11{=}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{with_capacity}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{5}{1}{2}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Copy transaction ID and question from query\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[..}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set flags\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // QR = {1} (response)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // OPCODE = {0} (standard query)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // AA = {1} if authoritative\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // TC = {0} (not truncated)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // RD = copy from query\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // RA = {1} (recursion available)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Z = {0}\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // RCODE = {0} (no error)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{flags{1}}} {\cf11{=}} {\cf2{}}{\cf4{{0}x{8}{0}}} {\cf2{}}{\cf11{| (}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{] &}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{);}} {\cf2{}}{\cf5{\i // Set QR and preserve RD\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{flags{2}}} {\cf11{=}} {\cf2{}}{\cf4{{0}x{8}{0}}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // Set RA\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}} {\cf11{\{}} {\cf2{flags{1}}} {\cf11{|}} {\cf2{}}{\cf4{{0}x{0}{4}}} {\cf2{}}{\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}} {\cf2{flags{1}}} {\cf11{\},}} {\cf2{}}{\cf5{\i // Set AA if authoritative\i0 }}}\par\pard
+\cbpat1{{\cf2{        flags{2}}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Copy QDCOUNT from query\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{..}}{\cf2{}}{\cf4{{6}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set ANCOUNT to {1}\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set NSCOUNT ({2} if authoritative, else {0})\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf15{\b if\b0 }} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}} {\cf11{\{}} {\cf2{}}{\cf4{{0}x{0}{2}}} {\cf2{}}{\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}} {\cf2{}}{\cf4{{0}x{0}{0}}} {\cf2{}}{\cf11{\}]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set ARCOUNT to {0}\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Copy question section from query\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{qname_end}} {\cf11{=}} {\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{..].}}{\cf2{}}{\cf18{iter}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{position}}{\cf2{}}{\cf11{(|&}}{\cf2{b}}{\cf11{|}} {\cf2{b}} {\cf11{==}} {\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{ok_or_else}}{\cf2{}}{\cf11{(||}} {\cf2{DnsError}}{\cf11{::}}{\cf2{}}{\cf18{Protocol}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Invalid question format"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()))}}{\cf2{?}} {\cf11{+}} {\cf2{}}{\cf4{{1}{3}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{..}}{\cf2{qname_end}} {\cf11{+}} {\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Add answer section for SOA\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Name pointer to question\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}xc{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}c}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Type SOA ({0}x{0}{0}{0}{6})\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{6}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Class IN ({0}x{0}{0}{0}{1})\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // TTL ({3}{2} bits)\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{ttl}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{3}{2}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Parse and encode SOA record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{soa_parts}}{\cf11{:}} {\cf2{Vec}}{\cf11{<&}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{> =}} {\cf2{soa_value}}{\cf11{.}}{\cf2{}}{\cf18{split_whitespace}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{collect}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{soa_parts}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() >=}} {\cf2{}}{\cf4{{7}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // MNAME (primary nameserver)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{mname}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(}}{\cf2{soa_parts}}{\cf11{[}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // RNAME (responsible person mailbox)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{rname}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(}}{\cf2{soa_parts}}{\cf11{[}}{\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Calculate RDLENGTH (mname + rname + {5} x {3}{2}-bit integers)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{rdlength}} {\cf11{=}} {\cf2{mname}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() +}} {\cf2{rname}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() +}} {\cf2{}}{\cf4{{2}{0}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{rdlength}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Add MNAME and RNAME\i0 }}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{mname}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{rname}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Add the {5} SOA integers (SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b for\b0 }} {\cf2{i}} {\cf15{\b in\b0 }} {\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{..}}{\cf2{}}{\cf4{{7}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{val}}{\cf11{) =}} {\cf2{soa_parts}}{\cf11{[}}{\cf2{i}}{\cf11{].}}{\cf2{parse}}{\cf11{::<}}{\cf2{}}{\cf16{u{3}{2}}}{\cf2{}}{\cf11{>() \{}}}\par\pard
+\cbpat1{{\cf2{                response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{val}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // Default values if parsing fails\i0 }}}\par\pard
+\cbpat1{{\cf2{                response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b match\b0 }} {\cf2{i}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf4{{2}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf4{{1}u{3}{2}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf5{\i // SERIAL\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf4{{3}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf4{{1}{0}{8}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf5{\i // REFRESH\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf4{{4}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf4{{3}{6}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf5{\i // RETRY\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf4{{5}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf4{{6}{0}{4}{8}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf5{\i // EXPIRE\i0 }}}\par\pard
+\cbpat1{{\cf2{                    _}} {\cf11{=>}} {\cf2{}}{\cf4{{8}{6}{4}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf5{\i // MINIMUM\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{\}.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // If SOA format is invalid, add a minimal valid SOA record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{ns_records}} {\cf11{= &}}{\cf2{config}}{\cf11{.}}{\cf2{ns_records}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{mname}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(&}}{\cf2{ns_records}}{\cf11{.}}{\cf2{}}{\cf18{first}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{cloned}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{unwrap_or_else}}{\cf2{}}{\cf11{(||}} {\cf2{}}{\cf3{"ns{1}.example.com."}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_string}}{\cf2{}}{\cf11{()));}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{rname}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf18{format!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"hostmaster.}}{\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{domain}}{\cf11{));}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Calculate RDLENGTH\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{rdlength}} {\cf11{=}} {\cf2{mname}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() +}} {\cf2{rname}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() +}} {\cf2{}}{\cf4{{2}{0}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{rdlength}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // MNAME and RNAME\i0 }}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{mname}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{rname}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // SOA integers with reasonable defaults\i0 }}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf4{{1}u{3}{2}}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // SERIAL\i0 }}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf4{{1}{0}{8}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // REFRESH\i0 }}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf4{{3}{6}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // RETRY\i0 }}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf4{{6}{0}{4}{8}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // EXPIRE\i0 }}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf4{{8}{6}{4}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // MINIMUM\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Add authoritative NS records if configured\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b for\b0 }} {\cf2{ns}} {\cf15{\b in\b0 }} {\cf2{}}{\cf11{&}}{\cf2{config}}{\cf11{.}}{\cf2{ns_records}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Name pointer to question\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}xc{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}c}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Type NS ({0}x{0}{0}{0}{2})\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{2}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Class IN ({0}x{0}{0}{0}{1})\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // TTL (use same as A record)\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{ttl}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{3}{2}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // RDLENGTH and RDATA (NS name)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{ns_data}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(}}{\cf2{ns}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&((}}{\cf2{ns_data}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{()));}}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{ns_data}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{response}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // Function to build response for NS records\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{build_ns_response}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{    query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{],}}}\par\pard
+\cbpat1{{\cf2{    records}}{\cf11{: &[(}}{\cf2{String}}{\cf11{,}} {\cf2{}}{\cf16{u{6}{4}}}{\cf2{}}{\cf11{,}} {\cf2{String}}{\cf11{)],}}}\par\pard
+\cbpat1{{\cf2{    ttl}}{\cf11{:}} {\cf2{}}{\cf16{u{6}{4}}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    domain}}{\cf11{:}} {\cf2{String}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    config}}{\cf11{: &}}{\cf2{ServerConfig}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{) ->}} {\cf2{Result}}{\cf11{<}}{\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>,}} {\cf2{DnsError}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{response}} {\cf11{=}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{with_capacity}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{5}{1}{2}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Copy transaction ID and question from query\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[..}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set flags\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{flags{1}}} {\cf11{=}} {\cf2{}}{\cf4{{0}x{8}{0}}} {\cf2{}}{\cf11{| (}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{] &}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{);}} {\cf2{}}{\cf5{\i // Set QR and preserve RD\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{flags{2}}} {\cf11{=}} {\cf2{}}{\cf4{{0}x{8}{0}}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // Set RA\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}} {\cf11{\{}} {\cf2{flags{1}}} {\cf11{|}} {\cf2{}}{\cf4{{0}x{0}{4}}} {\cf2{}}{\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}} {\cf2{flags{1}}} {\cf11{\},}} {\cf2{}}{\cf5{\i // Set AA if authoritative\i0 }}}\par\pard
+\cbpat1{{\cf2{        flags{2}}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Filter NS records from database\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{db_ns_records}}{\cf11{:}} {\cf2{Vec}}{\cf11{<(}}{\cf2{String}}{\cf11{,}} {\cf2{}}{\cf16{u{6}{4}}}{\cf2{}}{\cf11{,}} {\cf2{String}}{\cf11{)> =}} {\cf2{records}}{\cf11{.}}{\cf2{}}{\cf18{iter}}{\cf2{}}{\cf11{()}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{filter}}{\cf2{}}{\cf11{(|(}}{\cf2{_}}{\cf11{,}} {\cf2{_}}{\cf11{,}} {\cf2{rtype}}{\cf11{)|}} {\cf2{rtype}} {\cf11{==}} {\cf2{}}{\cf3{"NS"}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{cloned}}{\cf2{}}{\cf11{()}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{collect}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Use database records if available, otherwise fall back to config if authoritative\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{ns_records}}{\cf11{:}} {\cf2{Vec}}{\cf11{<(}}{\cf2{String}}{\cf11{,}} {\cf2{}}{\cf16{u{6}{4}}}{\cf2{}}{\cf11{,}} {\cf2{String}}{\cf11{)> =}} {\cf2{}}{\cf15{\b if\b0 }} {\cf2{db_ns_records}}{\cf11{.}}{\cf2{}}{\cf18{is_empty}}{\cf2{}}{\cf11{() &&}} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{        config}}{\cf11{.}}{\cf2{ns_records}}{\cf11{.}}{\cf2{}}{\cf18{iter}}{\cf2{}}{\cf11{()}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{.}}{\cf2{}}{\cf18{map}}{\cf2{}}{\cf11{(|}}{\cf2{ns}}{\cf11{| (}}{\cf2{ns}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{(),}} {\cf2{config}}{\cf11{.}}{\cf2{cache_ttl}}{\cf11{,}} {\cf2{}}{\cf3{"NS"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_string}}{\cf2{}}{\cf11{()))}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{.}}{\cf2{}}{\cf18{collect}}{\cf2{}}{\cf11{()}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{        db_ns_records}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Copy QDCOUNT from query\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{..}}{\cf2{}}{\cf4{{6}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set ANCOUNT to number of NS records\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{ns_records}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set NSCOUNT to {0} (we're putting all NS records in answer section)\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set ARCOUNT to {0}\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Copy question section from query\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{qname_end}} {\cf11{=}} {\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{..].}}{\cf2{}}{\cf18{iter}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{position}}{\cf2{}}{\cf11{(|&}}{\cf2{b}}{\cf11{|}} {\cf2{b}} {\cf11{==}} {\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{ok_or_else}}{\cf2{}}{\cf11{(||}} {\cf2{DnsError}}{\cf11{::}}{\cf2{}}{\cf18{Protocol}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Invalid question format"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()))}}{\cf2{?}} {\cf11{+}} {\cf2{}}{\cf4{{1}{3}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{..}}{\cf2{qname_end}} {\cf11{+}} {\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Add answer section for each NS record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b for\b0 }} {\cf2{}}{\cf11{(}}{\cf2{value}}{\cf11{,}} {\cf2{record_ttl}}{\cf11{,}} {\cf2{_}}{\cf11{)}} {\cf2{}}{\cf15{\b in\b0 }} {\cf2{ns_records}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Name pointer to question\i0 }}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}xc{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}c}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Type NS ({0}x{0}{0}{0}{2})\i0 }}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{2}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Class IN ({0}x{0}{0}{0}{1})\i0 }}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // TTL ({3}{2} bits)\i0 }}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{record_ttl}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{3}{2}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // RDLENGTH and RDATA (NS name)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{ns_data}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(&}}{\cf2{value}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&((}}{\cf2{ns_data}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{()));}}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{ns_data}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{response}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // Function to build responses for MX, TXT, CNAME records\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{build_generic_record_response}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{    query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{],}}}\par\pard
+\cbpat1{{\cf2{    value}}{\cf11{: &}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    ttl}}{\cf11{:}} {\cf2{}}{\cf16{u{6}{4}}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    domain}}{\cf11{:}} {\cf2{String}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    query_type}}{\cf11{:}} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    config}}{\cf11{: &}}{\cf2{ServerConfig}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{) ->}} {\cf2{Result}}{\cf11{<}}{\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>,}} {\cf2{DnsError}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{response}} {\cf11{=}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{with_capacity}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{5}{1}{2}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Copy transaction ID and question from query\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[..}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set flags\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{flags{1}}} {\cf11{=}} {\cf2{}}{\cf4{{0}x{8}{0}}} {\cf2{}}{\cf11{| (}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{] &}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{);}} {\cf2{}}{\cf5{\i // Set QR and preserve RD\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{flags{2}}} {\cf11{=}} {\cf2{}}{\cf4{{0}x{8}{0}}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // Set RA\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}} {\cf11{\{}} {\cf2{flags{1}}} {\cf11{|}} {\cf2{}}{\cf4{{0}x{0}{4}}} {\cf2{}}{\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}} {\cf2{flags{1}}} {\cf11{\},}} {\cf2{}}{\cf5{\i // Set AA if authoritative\i0 }}}\par\pard
+\cbpat1{{\cf2{        flags{2}}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Copy QDCOUNT from query\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{..}}{\cf2{}}{\cf4{{6}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set ANCOUNT to {1}\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set NSCOUNT ({2} if authoritative, else {0})\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf15{\b if\b0 }} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}} {\cf11{\{}} {\cf2{}}{\cf4{{0}x{0}{2}}} {\cf2{}}{\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}} {\cf2{}}{\cf4{{0}x{0}{0}}} {\cf2{}}{\cf11{\}]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set ARCOUNT to {0}\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Copy question section from query\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{qname_end}} {\cf11{=}} {\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{..].}}{\cf2{}}{\cf18{iter}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{position}}{\cf2{}}{\cf11{(|&}}{\cf2{b}}{\cf11{|}} {\cf2{b}} {\cf11{==}} {\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{ok_or_else}}{\cf2{}}{\cf11{(||}} {\cf2{DnsError}}{\cf11{::}}{\cf2{}}{\cf18{Protocol}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Invalid question format"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()))}}{\cf2{?}} {\cf11{+}} {\cf2{}}{\cf4{{1}{3}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{..}}{\cf2{qname_end}} {\cf11{+}} {\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Add answer section\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Name pointer to question\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}xc{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}c}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Record Type ({2} bytes)\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query_type}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Class IN ({0}x{0}{0}{0}{1})\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // TTL ({3}{2} bits)\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{ttl}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{3}{2}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Format based on record type\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b match\b0 }} {\cf2{query_type}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{1}{2}}} {\cf2{}}{\cf11{=> \{}} {\cf2{}}{\cf5{\i // PTR record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Encode the PTR target name\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{ptr_data}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(}}{\cf2{value}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Add RDLENGTH\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{ptr_data}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Add the PTR data\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{ptr_data}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\},}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{1}{5}}} {\cf2{}}{\cf11{=> \{}} {\cf2{}}{\cf5{\i // MX record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Parse MX record format: "{1}{0} mail.example.com."\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{parts}}{\cf11{:}} {\cf2{Vec}}{\cf11{<&}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{> =}} {\cf2{value}}{\cf11{.}}{\cf2{}}{\cf18{split_whitespace}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{collect}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b if\b0 }} {\cf2{parts}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() >=}} {\cf2{}}{\cf4{{2}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{preference}} {\cf11{=}} {\cf2{parts}}{\cf11{[}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{].}}{\cf2{parse}}{\cf11{::<}}{\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{>().}}{\cf2{}}{\cf18{unwrap_or}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{1}{0}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{mx_host}} {\cf11{=}} {\cf2{parts}}{\cf11{[}}{\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{];}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // Encode the data\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{encoded_name}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(}}{\cf2{mx_host}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{rdlength}} {\cf11{=}} {\cf2{}}{\cf4{{2}}} {\cf2{}}{\cf11{+}} {\cf2{encoded_name}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{();}} {\cf2{}}{\cf5{\i // preference ({2} bytes) + name\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // Add RDLENGTH\i0 }}}\par\pard
+\cbpat1{{\cf2{                response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{rdlength}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // Add preference\i0 }}}\par\pard
+\cbpat1{{\cf2{                response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{preference}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // Add exchange domain\i0 }}}\par\pard
+\cbpat1{{\cf2{                response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{encoded_name}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{DnsError}}{\cf11{::}}{\cf2{}}{\cf18{Protocol}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Invalid MX record format"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()));}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\},}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{1}{6}}} {\cf2{}}{\cf11{=> \{}} {\cf2{}}{\cf5{\i // TXT record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Strip quotes if present\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{txt_value}} {\cf11{=}} {\cf2{}}{\cf15{\b if\b0 }} {\cf2{value}}{\cf11{.}}{\cf2{}}{\cf18{starts_with}}{\cf2{}}{\cf11{(}}{\cf2{'}}{\cf3{"') && value.ends_with('"}}{\cf2{'}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{&}}{\cf2{value}}{\cf11{[}}{\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{..}}{\cf2{value}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()-}}{\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{]}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{                value}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // TXT records are length-prefixed character strings\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{bytes}} {\cf11{=}} {\cf2{txt_value}}{\cf11{.}}{\cf2{}}{\cf18{as_bytes}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let mut\b0 }} {\cf2{txt_data}} {\cf11{=}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{with_capacity}}{\cf2{}}{\cf11{(}}{\cf2{bytes}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() +}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Add the length byte \i0 }}}\par\pard
+\cbpat1{{\cf2{            txt_data}}{\cf11{.}}{\cf2{}}{\cf18{push}}{\cf2{}}{\cf11{(}}{\cf2{bytes}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Add the text\i0 }}}\par\pard
+\cbpat1{{\cf2{            txt_data}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(}}{\cf2{bytes}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Add RDLENGTH\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{txt_data}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Add the TXT data\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{txt_data}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\},}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{5}}} {\cf2{}}{\cf11{=> \{}} {\cf2{}}{\cf5{\i // CNAME record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Encode the canonical name\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{cname_data}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(}}{\cf2{value}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Add RDLENGTH\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{cname_data}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Add the CNAME data\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{cname_data}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\},}}}\par\pard
+\cbpat1{{\cf2{        _}} {\cf11{=> \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{DnsError}}{\cf11{::}}{\cf2{}}{\cf18{Protocol}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf18{format!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Unsupported record type:}} {\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{query_type}}{\cf11{)));}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Add authoritative NS records if configured\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b for\b0 }} {\cf2{ns}} {\cf15{\b in\b0 }} {\cf2{}}{\cf11{&}}{\cf2{config}}{\cf11{.}}{\cf2{ns_records}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Name pointer to question\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}xc{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}c}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Type NS ({0}x{0}{0}{0}{2})\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{2}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Class IN ({0}x{0}{0}{0}{1})\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // TTL (use same as record TTL)\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{ttl}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{3}{2}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // RDLENGTH and RDATA (NS name)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{ns_data}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(}}{\cf2{ns}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&((}}{\cf2{ns_data}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{()));}}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{ns_data}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{response}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{lookup_records}}{\cf2{}}{\cf11{(}}{\cf2{db_path}}{\cf11{: &}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{,}} {\cf2{domain}}{\cf11{: &}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{) ->}} {\cf2{Vec}}{\cf11{<(}}{\cf2{String}}{\cf11{,}} {\cf2{}}{\cf16{u{6}{4}}}{\cf2{}}{\cf11{,}} {\cf2{String}}{\cf11{)> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{conn}} {\cf11{=}} {\cf2{Connection}}{\cf11{::}}{\cf2{}}{\cf18{open}}{\cf2{}}{\cf11{(}}{\cf2{db_path}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b match\b0 }} {\cf2{conn}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{conn}}{\cf11{) => \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b match\b0 }} {\cf2{conn}}{\cf11{.}}{\cf2{}}{\cf18{prepare}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf3{"SELECT value, ttl, record_type FROM dns_records WHERE domain = ?"}}{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{stmt}}{\cf11{) => \{}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf15{\b match\b0 }} {\cf2{stmt}}{\cf11{.}}{\cf2{}}{\cf18{query_map}}{\cf2{}}{\cf11{(}}{\cf2{params}}{\cf11{![}}{\cf2{domain}}{\cf11{], |}}{\cf2{row}}{\cf11{| \{}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf18{Ok}}{\cf2{}}{\cf11{((}}}\par\pard
+\cbpat1{{\cf2{                            row}}{\cf11{.}}{\cf2{}}{\cf18{get}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{unwrap_or_default}}{\cf2{}}{\cf11{(),}}}\par\pard
+\cbpat1{{\cf2{                            row}}{\cf11{.}}{\cf2{}}{\cf18{get}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{unwrap_or_default}}{\cf2{}}{\cf11{(),}}}\par\pard
+\cbpat1{{\cf2{                            row}}{\cf11{.}}{\cf2{}}{\cf18{get}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{unwrap_or_default}}{\cf2{}}{\cf11{(),}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf11{))}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf11{\}) \{}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{rows}}{\cf11{) =>}} {\cf2{rows}}{\cf11{.}}{\cf2{}}{\cf18{filter_map}}{\cf2{}}{\cf11{(}}{\cf2{Result}}{\cf11{::}}{\cf2{ok}}{\cf11{).}}{\cf2{}}{\cf18{collect}}{\cf2{}}{\cf11{(),}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{_}}{\cf11{) =>}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{(),}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{_}}{\cf11{) =>}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{(),}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{_}}{\cf11{) =>}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{(),}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // First, we need to add a function to parse the query type from the DNS packet\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{extract_query_type}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{]) ->}} {\cf2{Option}}{\cf11{<}}{\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() <}} {\cf2{}}{\cf4{{1}{2}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return\b0 }} {\cf2{None}}{\cf11{;}} {\cf2{}}{\cf5{\i // DNS header is {1}{2} bytes\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{pos}} {\cf11{=}} {\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // Start after header\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Skip QNAME\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b loop\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{pos}} {\cf11{>=}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{None}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{len}} {\cf11{=}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{len}} {\cf11{==}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{            pos}} {\cf11{+=}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b break\b0 }}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // End of QNAME\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{        pos}} {\cf11{+=}} {\cf2{len}} {\cf11{+}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Get QTYPE ({2} bytes after QNAME)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{1}}} {\cf2{}}{\cf11{<}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Some}}{\cf2{}}{\cf11{(((}}{\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{) <<}} {\cf2{}}{\cf4{{8}}}{\cf2{}}{\cf11{) |}} {\cf2{query}}{\cf11{[}}{\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{        None}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{build_dns_response}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{    query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{],}}}\par\pard
+\cbpat1{{\cf2{    ip}}{\cf11{: &}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    ttl}}{\cf11{:}} {\cf2{}}{\cf16{u{6}{4}}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    config}}{\cf11{: &}}{\cf2{ServerConfig}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{) ->}} {\cf2{Result}}{\cf11{<}}{\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>,}} {\cf2{DnsError}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{response}} {\cf11{=}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{with_capacity}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{5}{1}{2}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Copy transaction ID and question from query\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[..}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set flags\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // QR = {1} (response)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // OPCODE = {0} (standard query)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // AA = {1} if authoritative\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // TC = {0} (not truncated)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // RD = copy from query\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // RA = {1} (recursion available)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Z = {0}\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // RCODE = {0} (no error)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{flags{1}}} {\cf11{=}} {\cf2{}}{\cf4{{0}x{8}{0}}} {\cf2{}}{\cf11{| (}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{] &}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{);}} {\cf2{}}{\cf5{\i // Set QR and preserve RD\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{flags{2}}} {\cf11{=}} {\cf2{}}{\cf4{{0}x{8}{0}}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // Set RA\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}} {\cf11{\{}} {\cf2{flags{1}}} {\cf11{|}} {\cf2{}}{\cf4{{0}x{0}{4}}} {\cf2{}}{\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}} {\cf2{flags{1}}} {\cf11{\},}} {\cf2{}}{\cf5{\i // Set AA if authoritative\i0 }}}\par\pard
+\cbpat1{{\cf2{        flags{2}}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Copy QDCOUNT from query\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{..}}{\cf2{}}{\cf4{{6}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set ANCOUNT to {1}\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set NSCOUNT ({2} if authoritative, else {0})\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf15{\b if\b0 }} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}} {\cf11{\{}} {\cf2{}}{\cf4{{0}x{0}{2}}} {\cf2{}}{\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}} {\cf2{}}{\cf4{{0}x{0}{0}}} {\cf2{}}{\cf11{\}]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Set ARCOUNT to {0}\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Copy question section from query\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{qname_end}} {\cf11{=}} {\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{..].}}{\cf2{}}{\cf18{iter}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{position}}{\cf2{}}{\cf11{(|&}}{\cf2{b}}{\cf11{|}} {\cf2{b}} {\cf11{==}} {\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{ok_or_else}}{\cf2{}}{\cf11{(||}} {\cf2{DnsError}}{\cf11{::}}{\cf2{}}{\cf18{Protocol}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Invalid question format"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()))}}{\cf2{?}} {\cf11{+}} {\cf2{}}{\cf4{{1}{3}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{..}}{\cf2{qname_end}} {\cf11{+}} {\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Add answer section\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Name pointer to question\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}xc{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}c}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Type A ({0}x{0}{0}{0}{1})\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Class IN ({0}x{0}{0}{0}{1})\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // TTL ({3}{2} bits)\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{ttl}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{3}{2}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // RDLENGTH ({4} for IPv{4})\i0 }}}\par\pard
+\cbpat1{{\cf2{    response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{4}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // RDATA (IPv{4} address)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{ip_parts}}{\cf11{:}} {\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{> =}} {\cf2{ip}}{\cf11{.}}{\cf2{}}{\cf18{split}}{\cf2{}}{\cf11{(}}{\cf2{'}}{\cf11{.}}{\cf2{'}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{map}}{\cf2{}}{\cf11{(|}}{\cf2{s}}{\cf11{|}} {\cf2{s}}{\cf11{.}}{\cf2{parse}}{\cf11{::<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>().}}{\cf2{}}{\cf18{unwrap_or}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{))}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{.}}{\cf2{}}{\cf18{collect}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{ip_parts}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() ==}} {\cf2{}}{\cf4{{4}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{        response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{ip_parts}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{DnsError}}{\cf11{::}}{\cf2{}}{\cf18{Protocol}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"Invalid IP address format"}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{into}}{\cf2{}}{\cf11{()));}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Add authoritative NS records if configured\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{config}}{\cf11{.}}{\cf2{authoritative}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b for\b0 }} {\cf2{ns}} {\cf15{\b in\b0 }} {\cf2{}}{\cf11{&}}{\cf2{config}}{\cf11{.}}{\cf2{ns_records}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Name pointer to question\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}xc{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}c}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Type NS ({0}x{0}{0}{0}{2})\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{2}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Class IN ({0}x{0}{0}{0}{1})\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // TTL (use same as A record)\i0 }}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{ttl}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{3}{2}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // RDLENGTH and RDATA (NS name)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{ns_data}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(}}{\cf2{ns}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&((}}{\cf2{ns_data}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{()));}}}\par\pard
+\cbpat1{{\cf2{            response}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{ns_data}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{response}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // Add a function to handle NOTIMP responses properly\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{build_not_implemented_response}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{],}} {\cf2{authoritative}}{\cf11{:}} {\cf2{bool}}{\cf11{) ->}} {\cf2{Option}}{\cf11{<}}{\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{resp}} {\cf11{=}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{with_capacity}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{5}{1}{2}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{    resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{..}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // Transaction ID\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Get original flags but set QR bit and preserve RD and OPCODE\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{flags{1}}} {\cf11{=}} {\cf2{}}{\cf4{{0}x{8}{0}}} {\cf2{}}{\cf11{| (}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{] &}} {\cf2{}}{\cf4{{0}x{7}{9}}}{\cf2{}}{\cf11{);}} {\cf2{}}{\cf5{\i // QR={1}, OPCODE preserved, AA={0}, TC={0}, RD=preserved\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{flags{2}}} {\cf11{=}} {\cf2{}}{\cf4{{0}x{8}{4}}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // RA={1}, Z={0}, RCODE={4} (Not Implemented)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{    resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}}\par\pard
+\cbpat1{{\cf2{        flags{1}}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{authoritative}} {\cf11{\{}} {\cf2{flags{2}}} {\cf11{|}} {\cf2{}}{\cf4{{0}x{0}{4}}} {\cf2{}}{\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}} {\cf2{flags{2}}} {\cf11{\},}} {\cf2{}}{\cf5{\i // Set AA bit if authoritative\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{    resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{..}}{\cf2{}}{\cf4{{6}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // QDCOUNT\i0 }}}\par\pard
+\cbpat1{{\cf2{    resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // ANCOUNT\i0 }}}\par\pard
+\cbpat1{{\cf2{    resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // NSCOUNT\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Check for EDNS\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{has_edns}} {\cf11{=}} {\cf2{}}{\cf18{has_opt_record}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{    resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{}}{\cf15{\b if\b0 }} {\cf2{has_edns}} {\cf11{\{}} {\cf2{}}{\cf4{{1}u{1}{6}}} {\cf2{}}{\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}} {\cf2{}}{\cf4{{0}u{1}{6}}} {\cf2{}}{\cf11{\}).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // ARCOUNT\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Question Section (if available)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{qname_end}} {\cf11{=}} {\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{..].}}{\cf2{}}{\cf18{iter}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{position}}{\cf2{}}{\cf11{(|&}}{\cf2{b}}{\cf11{|}} {\cf2{b}} {\cf11{==}} {\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{end}}{\cf11{) =}} {\cf2{qname_end}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{}}{\cf4{{1}{2}}} {\cf2{}}{\cf11{+}} {\cf2{end}} {\cf11{+}} {\cf2{}}{\cf4{{5}}} {\cf2{}}{\cf11{<=}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{..}}{\cf2{}}{\cf4{{1}{2}}} {\cf2{}}{\cf11{+}} {\cf2{end}} {\cf11{+}} {\cf2{}}{\cf4{{5}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Handle EDNS in NOTIMP response\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{has_edns}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{opt_payload_size}} {\cf11{=}} {\cf2{}}{\cf18{extract_edns_payload_size}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{).}}{\cf2{}}{\cf18{unwrap_or}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{4}{0}{9}{6}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Copy DO bit if present in request\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{do_bit}} {\cf11{=}} {\cf2{}}{\cf15{\b if\b0 }} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() >=}} {\cf2{}}{\cf4{{1}{7}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf18{extract_do_bit}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b false\b0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Add OPT record for EDNS\i0 }}}\par\pard
+\cbpat1{{\cf2{        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // Root domain\i0 }}}\par\pard
+\cbpat1{{\cf2{        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{2}{9}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // TYPE OPT\i0 }}}\par\pard
+\cbpat1{{\cf2{        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{opt_payload_size}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // UDP payload size from request\i0 }}}\par\pard
+\cbpat1{{\cf2{        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // Extended RCODE\i0 }}}\par\pard
+\cbpat1{{\cf2{        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // EDNS version\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{do_bit}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{8}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // Flags with DO bit set\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // Flags with DO bit clear\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // RDATA length\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{resp}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // Check if the query has an OPT record (EDNS)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{has_opt_record}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{]) ->}} {\cf2{bool}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() <}} {\cf2{}}{\cf4{{1}{2}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return false\b0 }}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Get the number of additional records (ARCOUNT)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{ar_count}} {\cf11{= ((}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{0}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{) <<}} {\cf2{}}{\cf4{{8}}}{\cf2{}}{\cf11{) |}} {\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{1}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{ar_count}} {\cf11{==}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return false\b0 }}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Skip the header and question section to find additional records\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{pos}} {\cf11{=}} {\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Skip QNAME\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b loop\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{pos}} {\cf11{>=}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return false\b0 }}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{len}} {\cf11{=}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{len}} {\cf11{==}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{            pos}} {\cf11{+=}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b break\b0 }}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{        pos}} {\cf11{+=}} {\cf2{len}} {\cf11{+}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Skip QTYPE and QCLASS\i0 }}}\par\pard
+\cbpat1{{\cf2{    pos}} {\cf11{+=}} {\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Check if there's an OPT record (type {4}{1}) in additional records\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b for\b0 }} {\cf2{_}} {\cf15{\b in\b0 }} {\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{..}}{\cf2{ar_count}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{2}}} {\cf2{}}{\cf11{>=}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return false\b0 }}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Check for root domain ({0}x{0}{0}) and OPT record type ({0}x{0}{0}{2}{9})\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{] ==}} {\cf2{}}{\cf4{{0}x{0}{0}}} {\cf2{}}{\cf11{&&}} {\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{5}}} {\cf2{}}{\cf11{<}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() &&}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{+}}{\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{] ==}} {\cf2{}}{\cf4{{0}x{0}{0}}} {\cf2{}}{\cf11{&&}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{+}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{] ==}} {\cf2{}}{\cf4{{0}x{2}{9}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return true\b0 }}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Skip this record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // For non-OPT records, we need to skip to the next record, which is complex\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // This is a simplified approach\i0 }}}\par\pard
+\cbpat1{{\cf2{        pos}} {\cf11{+=}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Find the end of the name field\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b while\b0 }} {\cf2{pos}} {\cf11{<}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() &&}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{] !=}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Handle compression pointers\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b if\b0 }} {\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{] &}} {\cf2{}}{\cf4{{0}xC{0}}}{\cf2{}}{\cf11{) ==}} {\cf2{}}{\cf4{{0}xC{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{                pos}} {\cf11{+=}} {\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b break\b0 }}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Regular label\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{label_len}} {\cf11{=}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{            pos}} {\cf11{+=}} {\cf2{label_len}} {\cf11{+}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Skip type, class, TTL, and RDLENGTH + RDATA\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{1}{0}}} {\cf2{}}{\cf11{<=}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{rd_length}} {\cf11{= ((}}{\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{+}}{\cf2{}}{\cf4{{8}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{) <<}} {\cf2{}}{\cf4{{8}}}{\cf2{}}{\cf11{) |}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{+}}{\cf2{}}{\cf4{{9}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{            pos}} {\cf11{+=}} {\cf2{}}{\cf4{{1}{0}}} {\cf2{}}{\cf11{+}} {\cf2{rd_length}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return false\b0 }}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b false\b0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // Extract the payload size from an EDNS query\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{extract_edns_payload_size}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{]) ->}} {\cf2{Option}}{\cf11{<}}{\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() <}} {\cf2{}}{\cf4{{1}{2}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return\b0 }} {\cf2{None}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Get the number of additional records (ARCOUNT)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{ar_count}} {\cf11{= ((}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{0}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{) <<}} {\cf2{}}{\cf4{{8}}}{\cf2{}}{\cf11{) |}} {\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{1}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{ar_count}} {\cf11{==}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return\b0 }} {\cf2{None}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Skip the header and question section to find additional records\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{pos}} {\cf11{=}} {\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Skip QNAME\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b loop\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{pos}} {\cf11{>=}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{None}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{len}} {\cf11{=}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{len}} {\cf11{==}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{            pos}} {\cf11{+=}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b break\b0 }}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{        pos}} {\cf11{+=}} {\cf2{len}} {\cf11{+}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Skip QTYPE and QCLASS\i0 }}}\par\pard
+\cbpat1{{\cf2{    pos}} {\cf11{+=}} {\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Look for OPT record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b for\b0 }} {\cf2{_}} {\cf15{\b in\b0 }} {\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{..}}{\cf2{ar_count}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{2}}} {\cf2{}}{\cf11{>=}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{None}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Check for root domain ({0}x{0}{0}) and OPT record type ({0}x{0}{0}{2}{9})\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{] ==}} {\cf2{}}{\cf4{{0}x{0}{0}}} {\cf2{}}{\cf11{&&}} {\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{5}}} {\cf2{}}{\cf11{<}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() &&}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{+}}{\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{] ==}} {\cf2{}}{\cf4{{0}x{0}{0}}} {\cf2{}}{\cf11{&&}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{+}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{] ==}} {\cf2{}}{\cf4{{0}x{2}{9}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Extract UDP payload size (CLASS field in OPT)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b if\b0 }} {\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{4}}} {\cf2{}}{\cf11{<}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(((}}{\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{+}}{\cf2{}}{\cf4{{3}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{) <<}} {\cf2{}}{\cf4{{8}}}{\cf2{}}{\cf11{) |}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{+}}{\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{4}{0}{9}{6}}}{\cf2{}}{\cf11{);}} {\cf2{}}{\cf5{\i // Default if we can't read it\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Skip this record (simplified approach)\i0 }}}\par\pard
+\cbpat1{{\cf2{        pos}} {\cf11{+=}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Find the end of the name field\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b while\b0 }} {\cf2{pos}} {\cf11{<}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() &&}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{] !=}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Handle compression pointers\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b if\b0 }} {\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{] &}} {\cf2{}}{\cf4{{0}xC{0}}}{\cf2{}}{\cf11{) ==}} {\cf2{}}{\cf4{{0}xC{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{                pos}} {\cf11{+=}} {\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b break\b0 }}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Regular label\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{label_len}} {\cf11{=}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{            pos}} {\cf11{+=}} {\cf2{label_len}} {\cf11{+}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Skip type, class, TTL, and RDLENGTH + RDATA\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{1}{0}}} {\cf2{}}{\cf11{<=}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{rd_length}} {\cf11{= ((}}{\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{+}}{\cf2{}}{\cf4{{8}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{) <<}} {\cf2{}}{\cf4{{8}}}{\cf2{}}{\cf11{) |}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{+}}{\cf2{}}{\cf4{{9}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{            pos}} {\cf11{+=}} {\cf2{}}{\cf4{{1}{0}}} {\cf2{}}{\cf11{+}} {\cf2{rd_length}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{None}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{    None}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{extract_do_bit}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{]) ->}} {\cf2{bool}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // The DO bit is the highest bit in the second byte of the OPT record flags\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Find the OPT record first (Type = {4}{1} = {0}x{2}{9})\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{pos}} {\cf11{=}} {\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // Skip header\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Skip question section\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b while\b0 }} {\cf2{pos}} {\cf11{<}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() &&}} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{] !=}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{        pos}} {\cf11{+=}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{    pos}} {\cf11{+=}} {\cf2{}}{\cf4{{5}}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // Skip null terminator ({1}) + QTYPE ({2}) + QCLASS ({2})\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Look for OPT record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b while\b0 }} {\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{1}{1}}} {\cf2{}}{\cf11{<=}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{query}}{\cf11{[}}{\cf2{pos}}{\cf11{] ==}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{&&}} {\cf2{}}{\cf5{\i // Root domain name\i0 }}}\par\pard
+\cbpat1{{\cf2{            query}}{\cf11{[}}{\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{] ==}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{&&}} {\cf2{query}}{\cf11{[}}{\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{] ==}} {\cf2{}}{\cf4{{0}x{2}{9}}} {\cf2{}}{\cf11{\{}} {\cf2{}}{\cf5{\i // Type OPT\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // The DO bit is in the flags section, {9} bytes after the start of the OPT record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{9}}} {\cf2{}}{\cf11{<}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() && (}}{\cf2{query}}{\cf11{[}}{\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{9}}}{\cf2{}}{\cf11{] &}} {\cf2{}}{\cf4{{0}x{8}{0}}}{\cf2{}}{\cf11{) !=}} {\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Skip this record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{1}{0}}} {\cf2{}}{\cf11{>=}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}} {\cf2{}}{\cf15{\b break\b0 }}{\cf2{}}{\cf11{; \}}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{rdlength}} {\cf11{= ((}}{\cf2{query}}{\cf11{[}}{\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{8}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{) <<}} {\cf2{}}{\cf4{{8}}}{\cf2{}}{\cf11{) |}} {\cf2{query}}{\cf11{[}}{\cf2{pos}} {\cf11{+}} {\cf2{}}{\cf4{{9}}}{\cf2{}}{\cf11{]}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{usize}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{        pos}} {\cf11{+=}} {\cf2{}}{\cf4{{1}{0}}} {\cf2{}}{\cf11{+}} {\cf2{rdlength}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b false\b0 }} {\cf2{}}{\cf5{\i // No OPT record found or no DO bit set\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i /// Helper function to encode domain names\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(}}{\cf2{name}}{\cf11{: &}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{) ->}} {\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{out}} {\cf11{=}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b for\b0 }} {\cf2{part}} {\cf15{\b in\b0 }} {\cf2{name}}{\cf11{.}}{\cf2{}}{\cf18{trim_end_matches}}{\cf2{}}{\cf11{(}}{\cf2{'}}{\cf11{.}}{\cf2{'}}{\cf11{).}}{\cf2{}}{\cf18{split}}{\cf2{}}{\cf11{(}}{\cf2{'}}{\cf11{.}}{\cf2{'}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{part}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() >}} {\cf2{}}{\cf4{{6}{3}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b continue\b0 }}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // Skip invalid labels\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{        out}}{\cf11{.}}{\cf2{}}{\cf18{push}}{\cf2{}}{\cf11{(}}{\cf2{part}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{        out}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(}}{\cf2{part}}{\cf11{.}}{\cf2{}}{\cf18{as_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{    out}}{\cf11{.}}{\cf2{}}{\cf18{push}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{);}} {\cf2{}}{\cf5{\i // Null terminator\i0 }}}\par\pard
+\cbpat1{{\cf2{    out}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // Add this new struct to properly track zone information\i0 }}}\par\pard
+\cbpat1{{\cf2{#}}{\cf11{[}}{\cf2{}}{\cf18{derive}}{\cf2{}}{\cf11{(}}{\cf2{Debug}}{\cf11{,}} {\cf2{Clone}}{\cf11{)]}}}\par\pard
+\cbpat1{{\cf2{}}{\cf16{struct}} {\cf2{ZoneInfo}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{    name}}{\cf11{:}} {\cf2{String}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{    ns_records}}{\cf11{:}} {\cf2{Vec}}{\cf11{<}}{\cf2{String}}{\cf11{>,}}}\par\pard
+\cbpat1{{\cf2{    soa_record}}{\cf11{:}} {\cf2{Option}}{\cf11{<}}{\cf2{String}}{\cf11{>,}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // Add this function to extract zones from database\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{get_authoritative_zones}}{\cf2{}}{\cf11{(}}{\cf2{db_path}}{\cf11{: &}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{) ->}} {\cf2{Vec}}{\cf11{<}}{\cf2{ZoneInfo}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{zones}} {\cf11{=}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{conn}}{\cf11{) =}} {\cf2{Connection}}{\cf11{::}}{\cf2{}}{\cf18{open}}{\cf2{}}{\cf11{(}}{\cf2{db_path}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Find all domains with NS records (these are zones)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{stmt}}{\cf11{) =}} {\cf2{conn}}{\cf11{.}}{\cf2{}}{\cf18{prepare}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf3{"SELECT DISTINCT domain FROM dns_records WHERE record_type = 'NS'"}}{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{rows}}{\cf11{) =}} {\cf2{stmt}}{\cf11{.}}{\cf2{}}{\cf18{query_map}}{\cf2{}}{\cf11{([], |}}{\cf2{row}}{\cf11{| \{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{row}}{\cf11{.}}{\cf2{get}}{\cf11{::<}}{\cf2{_}}{\cf11{,}} {\cf2{String}}{\cf11{>(}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{)}}{\cf2{?}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}) \{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b for\b0 }} {\cf2{domain_result}} {\cf15{\b in\b0 }} {\cf2{rows}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{domain}}{\cf11{) =}} {\cf2{domain_result}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf15{\b let mut\b0 }} {\cf2{zone_info}} {\cf11{=}} {\cf2{ZoneInfo}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{                            name}}{\cf11{:}} {\cf2{domain}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{(),}}}\par\pard
+\cbpat1{{\cf2{                            ns_records}}{\cf11{:}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{new}}{\cf2{}}{\cf11{(),}}}\par\pard
+\cbpat1{{\cf2{                            soa_record}}{\cf11{:}} {\cf2{None}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf5{\i // Get NS records for this zone\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{ns_stmt}}{\cf11{) =}} {\cf2{conn}}{\cf11{.}}{\cf2{}}{\cf18{prepare}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{}}                            {\cf3{"SELECT value FROM dns_records WHERE domain = ? AND record_type = 'NS'"}}{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}                            {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{ns_rows}}{\cf11{) =}} {\cf2{ns_stmt}}{\cf11{.}}{\cf2{}}{\cf18{query_map}}{\cf2{}}{\cf11{([&}}{\cf2{domain}}{\cf11{], |}}{\cf2{row}}{\cf11{| \{}}}\par\pard
+\cbpat1{{\cf2{}}                                {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{row}}{\cf11{.}}{\cf2{get}}{\cf11{::<}}{\cf2{_}}{\cf11{,}} {\cf2{String}}{\cf11{>(}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{)}}{\cf2{?}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}                            {\cf11{\}) \{}}}\par\pard
+\cbpat1{{\cf2{                                zone_info}}{\cf11{.}}{\cf2{ns_records}} {\cf11{=}} {\cf2{ns_rows}}{\cf11{.}}{\cf2{}}{\cf18{filter_map}}{\cf2{}}{\cf11{(}}{\cf2{Result}}{\cf11{::}}{\cf2{ok}}{\cf11{).}}{\cf2{}}{\cf18{collect}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}                            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf5{\i // Get SOA record if exists\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{soa_stmt}}{\cf11{) =}} {\cf2{conn}}{\cf11{.}}{\cf2{}}{\cf18{prepare}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{}}                            {\cf3{"SELECT value FROM dns_records WHERE domain = ? AND record_type = 'SOA' LIMIT {1}"}}{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}                            {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf15{\b mut\b0 }} {\cf2{soa_rows}}{\cf11{) =}} {\cf2{soa_stmt}}{\cf11{.}}{\cf2{}}{\cf18{query_map}}{\cf2{}}{\cf11{([&}}{\cf2{domain}}{\cf11{], |}}{\cf2{row}}{\cf11{| \{}}}\par\pard
+\cbpat1{{\cf2{}}                                {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{row}}{\cf11{.}}{\cf2{get}}{\cf11{::<}}{\cf2{_}}{\cf11{,}} {\cf2{String}}{\cf11{>(}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{)}}{\cf2{?}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}                            {\cf11{\}) \{}}}\par\pard
+\cbpat1{{\cf2{                                zone_info}}{\cf11{.}}{\cf2{soa_record}} {\cf11{=}} {\cf2{soa_rows}}{\cf11{.}}{\cf2{}}{\cf18{next}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{and_then}}{\cf2{}}{\cf11{(|}}{\cf2{r}}{\cf11{|}} {\cf2{r}}{\cf11{.}}{\cf2{}}{\cf18{ok}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}                            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{                        zones}}{\cf11{.}}{\cf2{}}{\cf18{push}}{\cf2{}}{\cf11{(}}{\cf2{zone_info}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Add default zone information from config\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{zones}}{\cf11{.}}{\cf2{}}{\cf18{is_empty}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{config}}{\cf11{) =}} {\cf2{ServerConfig}}{\cf11{::}}{\cf2{}}{\cf18{from_env}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{default_zone}} {\cf11{=}} {\cf2{ZoneInfo}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{                name}}{\cf11{:}} {\cf2{config}}{\cf11{.}}{\cf2{default_domain}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{(),}}}\par\pard
+\cbpat1{{\cf2{                ns_records}}{\cf11{:}} {\cf2{config}}{\cf11{.}}{\cf2{ns_records}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{(),}}}\par\pard
+\cbpat1{{\cf2{                soa_record}}{\cf11{:}} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf18{format!}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf3{"}}{\cf12{\{\}}} {\cf3{hostmaster.}}{\cf12{\{\}}} {\cf3{{1} {1}{0}{8}{0}{0} {3}{6}{0}{0} {6}{0}{4}{8}{0}{0} {8}{6}{4}{0}{0}"}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{                    config}}{\cf11{.}}{\cf2{ns_records}}{\cf11{.}}{\cf2{}}{\cf18{first}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{unwrap_or}}{\cf2{}}{\cf11{(&}}{\cf2{String}}{\cf11{::}}{\cf2{}}{\cf18{from}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"ns{1}.example.com."}}{\cf2{}}{\cf11{)),}}}\par\pard
+\cbpat1{{\cf2{                    config}}{\cf11{.}}{\cf2{default_domain}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{)),}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{            zones}}{\cf11{.}}{\cf2{}}{\cf18{push}}{\cf2{}}{\cf11{(}}{\cf2{default_zone}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{    zones}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // Find the closest parent zone for a given domain\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{find_closest_parent_zone}}{\cf2{}}{\cf11{(}}{\cf2{domain}}{\cf11{: &}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{,}} {\cf2{zones}}{\cf11{: &[}}{\cf2{ZoneInfo}}{\cf11{]) ->}} {\cf2{Option}}{\cf11{<}}{\cf2{ZoneInfo}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{domain_parts}}{\cf11{:}} {\cf2{Vec}}{\cf11{<&}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{> =}} {\cf2{domain}}{\cf11{.}}{\cf2{}}{\cf18{split}}{\cf2{}}{\cf11{(}}{\cf2{'}}{\cf11{.}}{\cf2{'}}{\cf11{).}}{\cf2{}}{\cf18{collect}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Try progressively shorter parent domains\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b for\b0 }} {\cf2{i}} {\cf15{\b in\b0 }} {\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{..}}{\cf2{domain_parts}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{candidate}} {\cf11{=}} {\cf2{domain_parts}}{\cf11{[}}{\cf2{i}}{\cf11{..].}}{\cf2{}}{\cf18{join}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"."}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Exact match\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{zone}}{\cf11{) =}} {\cf2{zones}}{\cf11{.}}{\cf2{}}{\cf18{iter}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{find}}{\cf2{}}{\cf11{(|}}{\cf2{z}}{\cf11{|}} {\cf2{z}}{\cf11{.}}{\cf2{name}} {\cf11{==}} {\cf2{candidate}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{zone}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Check if domain is a subdomain of any zone we're authoritative for\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b for\b0 }} {\cf2{zone}} {\cf15{\b in\b0 }} {\cf2{zones}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{domain}}{\cf11{.}}{\cf2{}}{\cf18{ends_with}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf18{format!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{".}}{\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{zone}}{\cf11{.}}{\cf2{name}}{\cf11{)) \{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{zone}}{\cf11{.}}{\cf2{}}{\cf18{clone}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // If no match found, return None - we are not authoritative for this domain\i0 }}}\par\pard
+\cbpat1{{\cf2{    None}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // Improved NXDOMAIN response builder with proper authority section\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // Modified build_nxdomain_response function to correctly handle authority\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{build_nxdomain_response}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{: &[}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{],}} {\cf2{authoritative}}{\cf11{:}} {\cf2{bool}}{\cf11{) ->}} {\cf2{Option}}{\cf11{<}}{\cf2{Vec}}{\cf11{<}}{\cf2{}}{\cf16{u{8}}}{\cf2{}}{\cf11{>> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let mut\b0 }} {\cf2{resp}} {\cf11{=}} {\cf2{Vec}}{\cf11{::}}{\cf2{}}{\cf18{with_capacity}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{5}{1}{2}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{    resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{..}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // Transaction ID\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Extract domain from query for authority section reference\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{domain}} {\cf11{=}} {\cf2{}}{\cf15{\b match\b0 }} {\cf2{}}{\cf18{extract_domain}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{) \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{d}}{\cf11{) =>}} {\cf2{d}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{        None}} {\cf11{=>}} {\cf2{}}{\cf15{\b return\b0 }} {\cf2{None}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Get zones we're authoritative for\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{config}} {\cf11{=}} {\cf2{}}{\cf15{\b match\b0 }} {\cf2{ServerConfig}}{\cf11{::}}{\cf2{}}{\cf18{from_env}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{c}}{\cf11{) =>}} {\cf2{c}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf18{Err}}{\cf2{}}{\cf11{(}}{\cf2{_}}{\cf11{) =>}} {\cf2{}}{\cf15{\b return\b0 }} {\cf2{None}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{zones}} {\cf11{=}} {\cf2{}}{\cf18{get_authoritative_zones}}{\cf2{}}{\cf11{(&}}{\cf2{config}}{\cf11{.}}{\cf2{db_path}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{parent_zone}} {\cf11{=}} {\cf2{}}{\cf18{find_closest_parent_zone}}{\cf2{}}{\cf11{(&}}{\cf2{domain}}{\cf11{, &}}{\cf2{zones}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Determine if we're actually authoritative for this domain\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{is_authoritative}} {\cf11{=}} {\cf2{parent_zone}}{\cf11{.}}{\cf2{}}{\cf18{is_some}}{\cf2{}}{\cf11{() &&}} {\cf2{authoritative}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Get original flags but set QR bit and preserve RD\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{flags{1}}} {\cf11{=}} {\cf2{}}{\cf4{{0}x{8}{0}}} {\cf2{}}{\cf11{| (}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{] &}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{);}} {\cf2{}}{\cf5{\i // QR={1}, OPCODE={0}, AA={0}, TC={0}, RD=preserved\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{flags{2}}} {\cf11{=}} {\cf2{}}{\cf4{{0}x{8}{3}}}{\cf2{}}{\cf11{;}} {\cf2{}}{\cf5{\i // RA={1}, Z={0}, RCODE={3} (NXDOMAIN)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{    resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{is_authoritative}} {\cf11{\{}} {\cf2{flags{1}}} {\cf11{|}} {\cf2{}}{\cf4{{0}x{0}{4}}} {\cf2{}}{\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}} {\cf2{flags{1}}} {\cf11{\},}} {\cf2{}}{\cf5{\i // Set AA bit ONLY if truly authoritative\i0 }}}\par\pard
+\cbpat1{{\cf2{        flags{2}}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Determine record counts for header\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{ns_count}} {\cf11{=}} {\cf2{}}{\cf15{\b if\b0 }} {\cf2{is_authoritative}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{        parent_zone}}{\cf11{.}}{\cf2{}}{\cf18{as_ref}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{map}}{\cf2{}}{\cf11{(|}}{\cf2{z}}{\cf11{|}} {\cf2{z}}{\cf11{.}}{\cf2{ns_records}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()).}}{\cf2{}}{\cf18{unwrap_or}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{0}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{soa_count}} {\cf11{=}} {\cf2{}}{\cf15{\b if\b0 }} {\cf2{is_authoritative}} {\cf11{&&}} {\cf2{parent_zone}}{\cf11{.}}{\cf2{}}{\cf18{as_ref}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{and_then}}{\cf2{}}{\cf11{(|}}{\cf2{z}}{\cf11{|}} {\cf2{z}}{\cf11{.}}{\cf2{soa_record}}{\cf11{.}}{\cf2{}}{\cf18{as_ref}}{\cf2{}}{\cf11{()).}}{\cf2{}}{\cf18{is_some}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{1}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf4{{0}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\};}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{authority_count}} {\cf11{=}} {\cf2{ns_count}} {\cf11{+}} {\cf2{soa_count}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{    resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{4}}}{\cf2{}}{\cf11{..}}{\cf2{}}{\cf4{{6}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // QDCOUNT\i0 }}}\par\pard
+\cbpat1{{\cf2{    resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // ANCOUNT\i0 }}}\par\pard
+\cbpat1{{\cf2{    resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{authority_count}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // NSCOUNT\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Check for EDNS\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{has_edns}} {\cf11{=}} {\cf2{}}{\cf18{has_opt_record}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{    resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{}}{\cf15{\b if\b0 }} {\cf2{has_edns}} {\cf11{\{}} {\cf2{}}{\cf4{{1}u{1}{6}}} {\cf2{}}{\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}} {\cf2{}}{\cf4{{0}u{1}{6}}} {\cf2{}}{\cf11{\}).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // ARCOUNT\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Question Section\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{qname_end}} {\cf11{=}} {\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{..].}}{\cf2{}}{\cf18{iter}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{position}}{\cf2{}}{\cf11{(|&}}{\cf2{b}}{\cf11{|}} {\cf2{b}} {\cf11{==}} {\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{end}}{\cf11{) =}} {\cf2{qname_end}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{}}{\cf4{{1}{2}}} {\cf2{}}{\cf11{+}} {\cf2{end}} {\cf11{+}} {\cf2{}}{\cf4{{5}}} {\cf2{}}{\cf11{<=}} {\cf2{query}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{query}}{\cf11{[}}{\cf2{}}{\cf4{{1}{2}}}{\cf2{}}{\cf11{..}}{\cf2{}}{\cf4{{1}{2}}} {\cf2{}}{\cf11{+}} {\cf2{end}} {\cf11{+}} {\cf2{}}{\cf4{{5}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b return\b0 }} {\cf2{None}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b return\b0 }} {\cf2{None}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Add Authority Section if we're authoritative\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{is_authoritative}} {\cf11{&&}} {\cf2{parent_zone}}{\cf11{.}}{\cf2{}}{\cf18{is_some}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{zone}} {\cf11{=}} {\cf2{parent_zone}}{\cf11{.}}{\cf2{}}{\cf18{unwrap}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{zone_name}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(&}}{\cf2{zone}}{\cf11{.}}{\cf2{name}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Add SOA record if available (recommended by RFC {2}{3}{0}{8})\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{soa}}{\cf11{) =}} {\cf2{zone}}{\cf11{.}}{\cf2{soa_record}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Name of the zone\i0 }}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{zone_name}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Type SOA ({0}x{0}{0}{0}{6})\i0 }}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{6}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Class IN ({0}x{0}{0}{0}{1})\i0 }}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // TTL\i0 }}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{DEFAULT_TTL}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{3}{2}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Parse and encode SOA record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{soa_parts}}{\cf11{:}} {\cf2{Vec}}{\cf11{<&}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{> =}} {\cf2{soa}}{\cf11{.}}{\cf2{}}{\cf18{split_whitespace}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{collect}}{\cf2{}}{\cf11{();}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b if\b0 }} {\cf2{soa_parts}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() >=}} {\cf2{}}{\cf4{{7}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // MNAME (primary nameserver)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{mname}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(}}{\cf2{soa_parts}}{\cf11{[}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // RNAME (responsible person mailbox)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{rname}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(}}{\cf2{soa_parts}}{\cf11{[}}{\cf2{}}{\cf4{{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // Calculate RDLENGTH (mname + rname + {5} x {3}{2}-bit integers)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{rdlength}} {\cf11{=}} {\cf2{mname}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() +}} {\cf2{rname}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() +}} {\cf2{}}{\cf4{{2}{0}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{                resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{rdlength}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // Add MNAME and RNAME\i0 }}}\par\pard
+\cbpat1{{\cf2{                resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{mname}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{                resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{rname}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // Add the {5} SOA integers (SERIAL, REFRESH, RETRY, EXPIRE, MINIMUM)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b for\b0 }} {\cf2{i}} {\cf15{\b in\b0 }} {\cf2{}}{\cf4{{2}}}{\cf2{}}{\cf11{..}}{\cf2{}}{\cf4{{7}}} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf15{\b if let\b0 }} {\cf2{}}{\cf18{Ok}}{\cf2{}}{\cf11{(}}{\cf2{val}}{\cf11{) =}} {\cf2{soa_parts}}{\cf11{[}}{\cf2{i}}{\cf11{].}}{\cf2{parse}}{\cf11{::<}}{\cf2{}}{\cf16{u{3}{2}}}{\cf2{}}{\cf11{>() \{}}}\par\pard
+\cbpat1{{\cf2{                        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{val}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf5{\i // Default values if parsing fails\i0 }}}\par\pard
+\cbpat1{{\cf2{                        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf15{\b match\b0 }} {\cf2{i}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                            {\cf4{{2}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf4{{1}u{3}{2}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf5{\i // SERIAL\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                            {\cf4{{3}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf4{{1}{0}{8}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf5{\i // REFRESH\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                            {\cf4{{4}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf4{{3}{6}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf5{\i // RETRY\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                            {\cf4{{5}}} {\cf2{}}{\cf11{=>}} {\cf2{}}{\cf4{{6}{0}{4}{8}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf5{\i // EXPIRE\i0 }}}\par\pard
+\cbpat1{{\cf2{                            _}} {\cf11{=>}} {\cf2{}}{\cf4{{8}{6}{4}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf5{\i // MINIMUM\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                        {\cf11{\}.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}                    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // If SOA format is invalid, add a minimal valid SOA record\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{mname}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(&}}{\cf2{zone}}{\cf11{.}}{\cf2{ns_records}}{\cf11{.}}{\cf2{}}{\cf18{first}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{cloned}}{\cf2{}}{\cf11{().}}{\cf2{}}{\cf18{unwrap_or_else}}{\cf2{}}{\cf11{(||}} {\cf2{}}{\cf3{"ns{1}.example.com."}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_string}}{\cf2{}}{\cf11{()));}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{rname}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf18{format!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"hostmaster.}}{\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{zone}}{\cf11{.}}{\cf2{name}}{\cf11{));}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // Calculate RDLENGTH\i0 }}}\par\pard
+\cbpat1{{\cf2{}}                {\cf15{\b let\b0 }} {\cf2{rdlength}} {\cf11{=}} {\cf2{mname}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() +}} {\cf2{rname}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{() +}} {\cf2{}}{\cf4{{2}{0}}}{\cf2{}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{                resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{rdlength}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // MNAME and RNAME\i0 }}}\par\pard
+\cbpat1{{\cf2{                resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{mname}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{                resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{rname}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}                {\cf5{\i // SOA integers with reasonable defaults\i0 }}}\par\pard
+\cbpat1{{\cf2{                resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf4{{1}u{3}{2}}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // SERIAL\i0 }}}\par\pard
+\cbpat1{{\cf2{                resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf4{{1}{0}{8}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // REFRESH\i0 }}}\par\pard
+\cbpat1{{\cf2{                resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf4{{3}{6}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // RETRY\i0 }}}\par\pard
+\cbpat1{{\cf2{                resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf4{{6}{0}{4}{8}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // EXPIRE\i0 }}}\par\pard
+\cbpat1{{\cf2{                resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{}}{\cf4{{8}{6}{4}{0}{0}u{3}{2}}}{\cf2{}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // MINIMUM\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Add NS records\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b for\b0 }} {\cf2{ns}} {\cf15{\b in\b0 }} {\cf2{}}{\cf11{&}}{\cf2{zone}}{\cf11{.}}{\cf2{ns_records}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Name of the zone\i0 }}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{zone_name}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Type NS ({0}x{0}{0}{0}{2})\i0 }}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{2}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // Class IN ({0}x{0}{0}{0}{1})\i0 }}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{1}}}{\cf2{}}{\cf11{]);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // TTL\i0 }}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{DEFAULT_TTL}} {\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{3}{2}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf5{\i // RDLENGTH and RDATA (NS name)\i0 }}}\par\pard
+\cbpat1{{\cf2{}}            {\cf15{\b let\b0 }} {\cf2{ns_data}} {\cf11{=}} {\cf2{}}{\cf18{encode_dns_name}}{\cf2{}}{\cf11{(}}{\cf2{ns}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&(}}{\cf2{ns_data}}{\cf11{.}}{\cf2{}}{\cf18{len}}{\cf2{}}{\cf11{()}} {\cf2{}}{\cf15{\b as\b0 }} {\cf2{}}{\cf16{u{1}{6}}}{\cf2{}}{\cf11{).}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{ns_data}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Also need to fix the generate_dns_response function to check for proper authority\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // This part would go in generate_dns_response:\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf6{\i /*\i0 }}}\par\pard
+\cbpat1{{\cf6{\i     // If not authoritative for this domain, don't set the AA flag\i0 }}}\par\pard
+\cbpat1{{\cf6{\i     if !config.authoritative || find_closest_parent_zone(&domain, &get_authoritative_zones(&config.db_path)).is_none() \{\i0 }}}\par\pard
+\cbpat1{{\cf6{\i         // Remove the AA flag when forwarding\i0 }}}\par\pard
+\cbpat1{{\cf6{\i         return build_forwarded_response(query, &config.forwarders).await;\i0 }}}\par\pard
+\cbpat1{{\cf6{\i     \}\i0 }}}\par\pard
+\cbpat1{{\cf6{\i     */\i0 }}{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Handle EDNS in NXDOMAIN response\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{has_edns}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{opt_payload_size}} {\cf11{=}} {\cf2{}}{\cf18{extract_edns_payload_size}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{).}}{\cf2{}}{\cf18{unwrap_or}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{4}{0}{9}{6}}}{\cf2{}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Copy DO bit if present in request\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{do_bit}} {\cf11{=}} {\cf2{}}{\cf18{extract_do_bit}}{\cf2{}}{\cf11{(}}{\cf2{query}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf5{\i // Add OPT record for EDNS\i0 }}}\par\pard
+\cbpat1{{\cf2{        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // Root domain\i0 }}}\par\pard
+\cbpat1{{\cf2{        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{2}{9}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // TYPE OPT\i0 }}}\par\pard
+\cbpat1{{\cf2{        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&}}{\cf2{opt_payload_size}}{\cf11{.}}{\cf2{}}{\cf18{to_be_bytes}}{\cf2{}}{\cf11{());}} {\cf2{}}{\cf5{\i // UDP payload size from request\i0 }}}\par\pard
+\cbpat1{{\cf2{        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // Extended RCODE\i0 }}}\par\pard
+\cbpat1{{\cf2{        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // EDNS version\i0 }}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b if\b0 }} {\cf2{do_bit}} {\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{8}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // Flags with DO bit set\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}} {\cf2{}}{\cf15{\b else\b0 }} {\cf2{}}{\cf11{\{}}}\par\pard
+\cbpat1{{\cf2{            resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // Flags with DO bit clear\i0 }}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{        resp}}{\cf11{.}}{\cf2{}}{\cf18{extend_from_slice}}{\cf2{}}{\cf11{(&[}}{\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{,}} {\cf2{}}{\cf4{{0}x{0}{0}}}{\cf2{}}{\cf11{]);}} {\cf2{}}{\cf5{\i // RDATA length\i0 }}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Some}}{\cf2{}}{\cf11{(}}{\cf2{resp}}{\cf11{)}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // Add SOA record support to the database initialization\i0 }}}\par\pard
+\cbpat1{{\cf2{}}{\cf15{\b fn\b0 }} {\cf2{}}{\cf18{init_db}}{\cf2{}}{\cf11{(}}{\cf2{db_path}}{\cf11{: &}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{,}} {\cf2{default_domain}}{\cf11{: &}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{,}} {\cf2{default_ip}}{\cf11{: &}}{\cf2{}}{\cf16{str}}{\cf2{}}{\cf11{) ->}} {\cf2{Result}}{\cf11{<(),}} {\cf2{DnsError}}{\cf11{> \{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{conn}} {\cf11{=}} {\cf2{Connection}}{\cf11{::}}{\cf2{}}{\cf18{open}}{\cf2{}}{\cf11{(}}{\cf2{db_path}}{\cf11{)}}{\cf2{?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf5{\i // Updated schema to allow multiple NS records\i0 }}}\par\pard
+\cbpat1{{\cf2{    conn}}{\cf11{.}}{\cf2{}}{\cf18{execute}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf3{"CREATE TABLE IF NOT EXISTS dns_records (}}}\par\pard
+\cbpat1{{\cf3{            domain TEXT NOT NULL,}}}\par\pard
+\cbpat1{{\cf3{            record_type TEXT NOT NULL CHECK(record_type IN (}}}\par\pard
+\cbpat1{{\cf3{                'A','AAAA','MX','TXT','NS','CNAME','PTR','SOA',}}}\par\pard
+\cbpat1{{\cf3{                'SRV','CAA','NAPTR','DS','DNSKEY','RRSIG','NSEC',}}}\par\pard
+\cbpat1{{\cf3{                'TLSA','SSHFP'}}}\par\pard
+\cbpat1{{\cf3{            )),}}}\par\pard
+\cbpat1{{\cf3{            value TEXT NOT NULL,}}}\par\pard
+\cbpat1{{\cf3{            ttl INTEGER DEFAULT {3}{6}{0}{0},}}}\par\pard
+\cbpat1{{\cf3{            PRIMARY KEY (domain, record_type, value)  -- Now allows multiple NS records}}}\par\pard
+\cbpat1{{\cf3{        ) WITHOUT ROWID"}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{[],}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{)}}{\cf2{?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b let\b0 }} {\cf2{count}}{\cf11{:}} {\cf2{}}{\cf16{i{6}{4}}} {\cf2{}}{\cf11{=}} {\cf2{conn}}{\cf11{.}}{\cf2{}}{\cf18{query_row}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"SELECT COUNT(*) FROM dns_records"}}{\cf2{}}{\cf11{, [], |}}{\cf2{row}}{\cf11{|}} {\cf2{row}}{\cf11{.}}{\cf2{}}{\cf18{get}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf4{{0}}}{\cf2{}}{\cf11{))}}{\cf2{?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf15{\b if\b0 }} {\cf2{count}} {\cf11{==}} {\cf2{}}{\cf4{{0}}} {\cf2{}}{\cf11{&& !}}{\cf2{default_ip}}{\cf11{.}}{\cf2{}}{\cf18{is_empty}}{\cf2{}}{\cf11{() \{}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{mail_domain}} {\cf11{=}} {\cf2{}}{\cf18{format!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"mail.}}{\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{default_domain}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{ns{1}}} {\cf11{=}} {\cf2{}}{\cf18{format!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"ns{1}.}}{\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{default_domain}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{ns{2}}} {\cf11{=}} {\cf2{}}{\cf18{format!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"ns{2}.}}{\cf12{\{\}}}{\cf3{"}}{\cf2{}}{\cf11{,}} {\cf2{default_domain}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf15{\b let\b0 }} {\cf2{soa_record}} {\cf11{=}} {\cf2{}}{\cf18{format!}}{\cf2{}}{\cf11{(}}{\cf2{}}{\cf3{"}}{\cf12{\{\}}} {\cf3{hostmaster.}}{\cf12{\{\}}} {\cf3{{1} {1}{0}{8}{0}{0} {3}{6}{0}{0} {6}{0}{4}{8}{0}{0} {8}{6}{4}{0}{0}"}}{\cf2{}}{\cf11{,}} {\cf2{ns{1}}}{\cf11{,}} {\cf2{default_domain}}{\cf11{);}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{        conn}}{\cf11{.}}{\cf2{}}{\cf18{execute_batch}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{&}}{\cf2{}}{\cf18{format!}}{\cf2{}}{\cf11{(}}}\par\pard
+\cbpat1{{\cf2{                r}}{\cf3{#"}}}\par\pard
+\cbpat1{{\cf3{                INSERT OR IGNORE INTO dns_records VALUES('}}{\cf12{\{{0}\}}}{\cf3{', 'A', ?, {3}{6}{0}{0});}}}\par\pard
+\cbpat1{{\cf3{                INSERT OR IGNORE INTO dns_records VALUES('www.}}{\cf12{\{{0}\}}}{\cf3{', 'A', ?, {3}{6}{0}{0});}}}\par\pard
+\cbpat1{{\cf3{                INSERT OR IGNORE INTO dns_records VALUES('api.}}{\cf12{\{{0}\}}}{\cf3{', 'A', ?, {3}{6}{0}{0});}}}\par\pard
+\cbpat1{{\cf3{                INSERT OR IGNORE INTO dns_records VALUES('mail.}}{\cf12{\{{0}\}}}{\cf3{', 'A', ?, {3}{6}{0}{0});}}}\par\pard
+\cbpat1{{\cf3{                INSERT OR IGNORE INTO dns_records VALUES('ns{1}.}}{\cf12{\{{0}\}}}{\cf3{', 'A', ?, {3}{6}{0}{0});}}}\par\pard
+\cbpat1{{\cf3{                INSERT OR IGNORE INTO dns_records VALUES('ns{2}.}}{\cf12{\{{0}\}}}{\cf3{', 'A', ?, {3}{6}{0}{0});}}}\par\pard
+\cbpat1{{\cf3{                INSERT OR IGNORE INTO dns_records VALUES('}}{\cf12{\{{0}\}}}{\cf3{', 'MX', '{1}{0}}} {\cf12{\{{1}\}}}{\cf3{', {3}{6}{0}{0});}}}\par\pard
+\cbpat1{{\cf3{                INSERT OR IGNORE INTO dns_records VALUES('}}{\cf12{\{{0}\}}}{\cf3{', 'TXT', '\\"v=spf{1} a mx ~all\\"', {3}{6}{0}{0});}}}\par\pard
+\cbpat1{{\cf3{                INSERT OR IGNORE INTO dns_records VALUES('}}{\cf12{\{{0}\}}}{\cf3{', 'NS', '}}{\cf12{\{{2}\}}}{\cf3{', {3}{6}{0}{0});}}}\par\pard
+\cbpat1{{\cf3{                INSERT OR IGNORE INTO dns_records VALUES('}}{\cf12{\{{0}\}}}{\cf3{', 'NS', '}}{\cf12{\{{3}\}}}{\cf3{', {3}{6}{0}{0});}}}\par\pard
+\cbpat1{{\cf3{                INSERT OR IGNORE INTO dns_records VALUES('}}{\cf12{\{{0}\}}}{\cf3{', 'SOA', '}}{\cf12{\{{4}\}}}{\cf3{', {3}{6}{0}{0});}}}\par\pard
+\cbpat1{{\cf3{                "#}}{\cf2{}}{\cf11{,}}}\par\pard
+\cbpat1{{\cf2{                default_domain}}{\cf11{,}} {\cf2{mail_domain}}{\cf11{,}} {\cf2{ns{1}}}{\cf11{,}} {\cf2{ns{2}}}{\cf11{,}} {\cf2{soa_record}}}\par\pard
+\cbpat1{{\cf2{}}            {\cf11{),}}}\par\pard
+\cbpat1{{\cf2{}}        {\cf11{)}}{\cf2{?}}{\cf11{;}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}    {\cf18{Ok}}{\cf2{}}{\cf11{(())}}}\par\pard
+\cbpat1{{\cf2{}}{\cf11{\}}}}\par\pard
+\cbpat1{{\cf2{}}}\par\pard
+\cbpat1{{\cf2{}}{\cf5{\i // List line of the code: main.rs //\i0 }}{\cf2{}}}\par\pard
+\cbpat1{}}
