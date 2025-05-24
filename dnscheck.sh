@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DOMAIN="bzo.in"
-DNS_SERVER="192.168.1.200"
+DOMAIN="yourdomain.tld"
+DNS_SERVER="192.168.1.200" # your LAN Server Address
 
 echo "=== DNS Diagnostic Report for $DOMAIN using $DNS_SERVER ==="
 echo

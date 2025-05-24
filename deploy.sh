@@ -2,9 +2,9 @@
 set -e
 
 # Paths
-SRC_BIN="/home/sunil/apps/bzo-ddns/dns_server"
-DEST_DIR="/var/dns-server"
-DEST_BIN="$DEST_DIR/dns_server"
+SRC_BIN="/home/<user-name>/apps/nx9-dns-server/dns_server"
+DEST_DIR="/var/nx9-dns-server"
+DEST_BIN="$DEST_DIR/nx9-dns_server"
 PREPROCESS_SCRIPT="$DEST_DIR/preprocess-key.sh"
 SOA_UPDATE_SCRIPT="$DEST_DIR/soa-update.sh"
 
